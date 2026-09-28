@@ -1,0 +1,253 @@
+# Rule of the Third Order of the Society of Saint Pius X
+# Normative edition: promulgated 1 November 1980 by Abp. Marcel Lefebvre.
+# Source: "Sursum Corda", Third Order of the SSPX (US District), No. 4, Winter 2013.
+# Reference edition for prayer texts and examen: Third Order Handbook, © 2024,
+#   Christ the King Priory, Langley BC (Canada District). See docs/RULE-EDITIONS.md.
+#
+# Rule text is NOT reproduced in this file. `text:` fields are intentionally empty
+# pending permission from the District. Structure only. See docs/RULE-EDITIONS.md §Copyright.
+
+id: sspx-third-order
+tradition: sspx-third-order
+title: Rule of the Third Order of the Society of Saint Pius X
+authority: "+Marcel Lefebvre, November 1, 1980"
+bindingUnderSin: false      # rubric on the Rule screen; the Founder's intent was explicitly light
+minimumAge: 12
+
+edition:
+  id: us-1980
+  label: 1980 promulgation, US District (Sursum Corda no. 4, Winter 2013)
+  normative: true
+  source: https://dickinson.tx.sspx.org/sites/default/files/documents/4-Third%20Order%20Newsletter_Christmas%202013_No4_0.pdf
+
+formation:
+  - id: enrollment
+    label: Enrollment
+    requires: [Request to the district Third Order priest, Information sheet, Enrollment document]
+  - id: postulancy
+    label: Postulancy
+    durationMonths: 12
+    requires: [Fidelity in keeping the obligations, Adherence to the spirit of the Third Order]
+    concludesWith: Profession — the medal of St. Pius X, a crucifix, and a certificate of membership
+  - id: professed
+    label: Professed member
+
+items:
+
+  # ---------- Daily ----------
+  - id: morning-prayer
+    title: Morning prayers
+    kind: obligation
+    cadence: { every: day }
+    when: { sun: sunrise }
+    satisfiedByAny: [prime, retreat-book-morning]
+    examenQuestion: Have I been faithful to my morning and evening prayers? Or have I neglected them without reason?
+
+  - id: evening-prayer
+    title: Evening prayers
+    kind: obligation
+    cadence: { every: day }
+    when: { sun: dusk }
+    satisfiedByAny: [compline, retreat-book-evening]
+    examenQuestion: Have I been faithful to my morning and evening prayers? Or have I neglected them without reason?
+
+  - id: prime
+    title: "Prime — the morning prayer of the Church"
+    kind: counsel        # a form that satisfies morning-prayer; the Founder encourages it
+    cadence: { every: day }
+    prayerId: prime
+    note: The Archbishop highlights the value of the divine office, encouraging members when possible to attend Prime and Compline.
+
+  - id: compline
+    title: "Compline — the evening prayer of the Church"
+    kind: counsel
+    cadence: { every: day }
+    prayerId: compline
+
+  - id: retreat-book-morning
+    title: Morning prayers from the Retreat Book
+    kind: counsel
+    cadence: { every: day }
+
+  - id: retreat-book-evening
+    title: Evening prayers from the Retreat Book
+    kind: counsel
+    cadence: { every: day }
+
+  - id: rosary
+    title: Recitation of the Rosary
+    kind: obligation
+    cadence: { every: day }
+    examenQuestion: Have I recited my Rosary devoutly, meditating on the Mysteries?
+
+  - id: mass-or-meditation
+    title: Attendance at the Immemorial Mass, if possible, or fifteen minutes of meditation
+    kind: obligation
+    cadence: { every: day }
+    satisfiedByAny: [daily-mass, meditation]
+    examenQuestion: Have I attended the Traditional Mass when possible? If not, have I daily practiced mental prayer?
+
+  - id: daily-mass
+    title: Attendance at the Immemorial Mass
+    kind: counsel
+    cadence: { every: day }
+
+  - id: meditation
+    title: Fifteen minutes of meditation
+    kind: counsel
+    cadence: { every: day }
+    durationMin: 15
+    # Note: YOUR edition says "meditation" (mental prayer). The 2024 CA edition broadens
+    # this to "a quarter hour of prayer". We follow yours. docs/RULE-EDITIONS.md
+
+  # ---------- Weekly ----------
+  - id: sunday-mass
+    title: Attendance at the Immemorial Mass, and not the Novus Ordo Missae
+    kind: obligation
+    cadence: { every: week }
+    onlyIf: [day:sunday]
+    examenQuestion: On Sunday, have I made a special effort to assist at Holy Mass? Do I attend the True Mass when on vacation?
+
+  # ---------- Fortnightly / monthly ----------
+  - id: penance
+    title: The Sacrament of Penance
+    kind: obligation
+    cadence: { every: weeks, n: 2, fallback: { every: month } }
+    examenQuestion: Have I been faithful in receiving the Sacrament of Penance with devotion at least once a month? Or have I made peace with my sins and imperfections?
+
+  # ---------- Biennial ----------
+  - id: retreat
+    title: A retreat
+    kind: obligation
+    cadence: { every: years, n: 2 }
+    examenQuestion: Have I thought seriously of making a retreat? Or have I neglected even to examine the possibility, claiming that it is too far, too costly, etc.?
+
+  # ---------- Fast and abstinence ----------
+  - id: fast
+    title: Fasting
+    kind: obligation
+    cadence:
+      onDays: [day:ember-wednesday, day:ember-friday, day:ember-saturday,
+           day:ash-wednesday, day:holy-saturday,
+           day:vigil-of:christmas,      # 24 December
+           day:vigil-of:pentecost,
+           day:vigil-of:assumption,     # 14 August
+           day:vigil-of:all-saints]     # 31 October
+    # RESOLVED 2026-09-27: user keeps ALL vigils. Under the 1962 calendar the fasting
+    # vigils are these four (per 1917 CIC c.1252 §2) — the 2024 CA edition names only
+    # three, omitting the Assumption. The vigil of the Immaculate Conception (7 Dec) was
+    # suppressed in the 1955/1962 reforms and survives in the CA edition for priests only;
+    # it is available as the opt-in `fast-immaculate-conception-vigil` below.
+    # CONFIRM the four-vigil list with the chaplain.
+    examenQuestion: Have I kept the fasts of the Third Order — Vigils, Ember Days etc.? Or have I forgotten these days through negligence?
+
+  - id: fast-immaculate-conception-vigil
+    title: Fast on the vigil of the Immaculate Conception (7 December)
+    kind: counsel
+    cadence: { onDays: [day:vigil-of:immaculate-conception] }
+    fromEdition: ca-2024
+    note: A pre-1955 vigil, not in the 1962 calendar. Kept by Society priests. Opt-in.
+
+  - id: abstinence
+    title: Abstinence
+    kind: obligation
+    cadence: { onDays: [day:friday] }     # all Fridays, year-round
+    examenQuestion: Abstinence on Fridays? Or have I forgotten these days through negligence?
+
+  - id: fast-priests
+    title: All Fridays in Lent, and the vigil of the Immaculate Conception
+    kind: obligation
+    appliesTo: [priest]
+    cadence: { onDays: [season:lent, day:friday, day:vigil-of:immaculate-conception] }
+    fromEdition: ca-2024               # not in the 1980 text; priests only
+
+  # ---------- Standing dispositions ----------
+  - id: no-television
+    title: Abstain from television
+    kind: obligation
+    cadence: { ongoing: true }
+    examenQuestion: Have I abstained completely from Television? Or have I made exceptions to the rule?
+
+  - id: no-unclean-reading
+    title: Abstain from unclean reading
+    kind: obligation
+    cadence: { ongoing: true }
+    examenQuestion: Have I avoided unclean reading?
+
+  - id: sobriety
+    title: Practice sobriety
+    kind: obligation
+    cadence: { ongoing: true }
+    examenQuestion: Have I practiced sobriety?
+
+  - id: mortify-media
+    title: Mortify one's use of the internet and all electronic media
+    kind: counsel
+    cadence: { ongoing: true }
+    fromEdition: ca-2024               # opt-in: the 2024 edition's update, not in yours
+    examenQuestion: Did I mortify myself in my use of the internet, electronic devices and media?
+
+  # ---------- Reading ----------
+  - id: spiritual-reading
+    title: Recommended reading
+    kind: counsel
+    cadence: { ongoing: true }
+    note: >
+      The acts of St. Pius X, the Catechism of the Council of Trent, the New Testament,
+      the Imitation of Christ, the lives of the saints. Try to spread good reading material.
+    examenQuestion: Have I been faithful to study and spiritual reading? Have I been apostolic, i.e. tried to spread good reading material?
+
+  # ---------- The married ----------
+  - id: marriage-laws
+    title: Observe the laws of marriage toward the goal of having a large family
+    kind: obligation
+    appliesTo: [married]
+    cadence: { ongoing: true }
+
+  - id: family-evening-prayers
+    title: Family evening prayers, and if possible the Holy Rosary, in the family
+    kind: obligation
+    appliesTo: [married]
+    cadence: { every: day }
+    when: { sun: dusk }
+    note: To make of the family home a sanctuary consecrated to the Hearts of Jesus and Mary.
+
+  - id: sunday-liturgical-life
+    title: Liturgical life paramount on Sundays and Feast days
+    kind: obligation
+    appliesTo: [married]
+    cadence: { onDays: [day:sunday, rank:<=2] }
+
+  - id: traditional-schools
+    title: Choose truly good and traditional schools, and contribute to their establishment
+    kind: obligation
+    appliesTo: [parent]
+    cadence: { ongoing: true }
+
+  - id: prudent-leisure
+    title: Be prudent in the choice of leisure activities and of vacation spots
+    kind: obligation
+    appliesTo: [married]
+    cadence: { ongoing: true }
+
+  # ---------- Professional and social ----------
+  - id: justice-charity
+    title: Pursue the duties of justice and charity, whether employer or employee
+    kind: obligation
+    cadence: { ongoing: true }
+
+  - id: social-reign
+    title: Promote and defend the social reign of Our Lord Jesus Christ
+    kind: obligation
+    cadence: { ongoing: true }
+
+# State of life is a profile toggle, not a fork of the Rule. `appliesTo` on each item is
+# evaluated against the user's profile, so one Rule file serves a married layman, a single
+# layman, and a priest. Current user: married. See docs/PROFILE.md.
+profileRequires: [maritalState, hasChildren, isPriest]
+
+community:
+  - id: chapter-meeting
+    title: General meetings called by the district priest in charge
+    cadence: { every: month }
+    kind: counsel
