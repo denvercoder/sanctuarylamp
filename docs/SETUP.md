@@ -115,3 +115,39 @@ biggest product risk and it is a design problem, not a technical one: onboarding
 iPhone users through *Share → Add to Home Screen* with a screenshot, or notifications simply
 never arrive and they conclude the app is broken. The ICS feed is the fallback for anyone who
 declines.
+
+## Rotating the VAPID keys
+
+A VAPID key pair identifies this server to push services. The private half cannot be
+recovered — if it is lost, you generate a new pair.
+
+**The cost depends entirely on when.** Every push subscription is bound to the public key
+it was created with, so rotating invalidates all of them: existing users stop receiving
+notifications until each of them re-enables it, and the app cannot fix that for them.
+Before launch this costs nothing. After launch it is a silent, per-user outage, which is
+the worst kind.
+
+Generate and install in one step, so the private half never reaches the screen, the
+clipboard, or shell history:
+
+```bash
+KEYS=$(npx --yes web-push generate-vapid-keys --json) && PUB=$(node -p "JSON.parse(process.argv[1]).publicKey" "$KEYS") && PRIV=$(node -p "JSON.parse(process.argv[1]).privateKey" "$KEYS") && npx supabase secrets set VAPID_PUBLIC_KEY="$PUB" VAPID_PRIVATE_KEY="$PRIV" VAPID_SUBJECT="mailto:admin@sanctuarylamp.com" >/dev/null && echo "$PUB"
+```
+
+Then the public half goes to **three** places, and missing any one of them fails quietly:
+
+1. `.env.local` — local development
+2. Netlify `VITE_VAPID_PUBLIC_KEY`, **then redeploy** — it is baked into the client bundle
+   at build time, so changing the variable alone does nothing
+3. Supabase `VAPID_PUBLIC_KEY` — set by the command above
+
+After rotating, any row in `push_subscriptions` predating the change is dead. Clear them
+rather than letting the sender retry:
+
+```sql
+update public.push_subscriptions set expired_at = now() where expired_at is null;
+```
+
+**Storage:** the private key belongs in Supabase Edge Function secrets and a password
+manager, and nowhere else. Never in the repo, never in Netlify (Netlify only ever needs
+the public half), and never in a chat window.
