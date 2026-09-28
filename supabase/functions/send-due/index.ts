@@ -17,8 +17,8 @@ import * as webpush from 'jsr:@negrel/webpush@0.3'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-const VAPID_PUBLIC = Deno.env.get('VAPID_PUBLIC_KEY')!
-const VAPID_PRIVATE = Deno.env.get('VAPID_PRIVATE_KEY')!
+const VAPID_PUBLIC = Deno.env.get('VAPID_PUBLIC_KEY') ?? ''
+const VAPID_PRIVATE = Deno.env.get('VAPID_PRIVATE_KEY') ?? ''
 const VAPID_SUBJECT = Deno.env.get('VAPID_SUBJECT') ?? 'mailto:admin@sanctuarylamp.com'
 
 const db = createClient(SUPABASE_URL, SERVICE_KEY, {
@@ -34,8 +34,30 @@ type Sub = {
   id: string; endpoint: string; p256dh: string; auth: string
 }
 
-Deno.serve(async () => {
+Deno.serve(async (req) => {
   const startedAt = Date.now()
+
+  /**
+   * Health check: GET, or POST ?health.
+   *
+   * Reports the PUBLIC half of the VAPID pair, which is not a secret — it ships in every
+   * client bundle. This exists to close the nastiest failure mode in the whole system:
+   * if the client subscribes with one public key and the server signs with a different
+   * private key, subscriptions are created happily, every delivery is rejected, and
+   * NOTHING errors anywhere the user can see. Comparing this against
+   * VITE_VAPID_PUBLIC_KEY proves the two halves belong together.
+   */
+  const url = new URL(req.url)
+  if (req.method === 'GET' || url.searchParams.has('health')) {
+    return json({
+      ok: true,
+      vapid: {
+        publicKey: VAPID_PUBLIC ?? null,
+        privateKeySet: Boolean(VAPID_PRIVATE),
+        subject: VAPID_SUBJECT,
+      },
+    })
+  }
 
   // Only unsent reminders that have actually come due. A missed cron tick simply
   // delivers late rather than dropping anything — `fire_at <= now()` has no lower bound
