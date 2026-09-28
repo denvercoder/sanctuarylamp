@@ -214,3 +214,64 @@ secret — and the end-to-end push test, which is still the one unproven piece.
     Holy Thursday and the Glorious on Holy Saturday. Many pray the Sorrowful throughout.
     The engine follows the rule as written and raises the question rather than inventing
     an exception. ASK THE CHAPLAIN.
+
+## 2026-09-28 — solo session (tag: before-solo-2026-09-28)
+Five units, each independently committed. `git diff before-solo-2026-09-28..main`
+
+**1. The fidelity grid** (`src/lib/fidelity.ts`, `src/components/Fidelity.tsx`)
+The screen that replaces streaks. One cell per day of the liturgical year in that day's
+colour, so twelve months read as a stained-glass window. Cells have a colour FLOOR for
+the same reason the lamp does — the year happened whether or not you kept it, and a grid
+blank until you earn it would be a scold. New metric: **returns**, the times a day with
+something followed a day with nothing. The deliberate inversion of a streak — it counts
+beginnings, only ever rises, and a long absence costs nothing.
+
+**2. The particular examen** (`src/lib/examen.ts`, `src/components/Examen.tsx`)
+One fault, examined midday and night, recorded as traditional dots, this week against
+last. One resolution at a time; starting a new one ends the old. A dash (examined,
+nothing to record) and a blank row (not examined) are different facts, and `compare()`
+returns `undefined` rather than 0 so the app never flatters by conflating them.
+**Refuses entirely in scrupulosity mode** — tallying faults twice a day is the most
+harmful thing this app could do to a scrupulous user. Local only, never synced.
+
+**3. The monthly recollection** (`src/components/Report.tsx`)
+The Rule item by item for a month, each obligation carrying the handbook's own examen
+question beneath it in red, plus the particular examen and ruled lines for handwriting.
+Built to be PRINTED: the print stylesheet inverts the theme to black on white, keeps
+rubrics red, and hides all chrome. No score, percentage or grade anywhere — reading the
+record is the director's work.
+
+**4. Initial payload cut 45%** — 218 kB gzip → 120 kB entry.
+- Rule compiled to JSON by a build-time Vite plugin: no YAML parser ships (−32 kB), and
+  **a malformed rule now breaks the build rather than the app.**
+- Supabase imported dynamically (−59 kB off the critical path).
+- Settings / Fidelity / Examen / Report each lazy-loaded.
+
+**5. Offline and privacy fixes**
+- **NavigationRoute added** — precaching index.html was not enough; offline, a deep link
+  or reload on any path but `/` went to the network and failed.
+- Web manifest precached.
+- **Cardo self-hosted** (latin + latin-ext only, OFL 1.1). A CDN font does not work with
+  no signal, and a Google request on every launch contradicted the privacy posture.
+  Verified zero third-party requests on load.
+
+### Bugs found and fixed en route
+- `position: relative` on the great-lamp variant silently overrode `position: fixed` on
+  the base overlay, dropping the whole full-screen Recollection into normal flow.
+- Two CSS animations on one element's `transform` resolve to whichever is declared last;
+  the flame's flicker was being eaten by its gutter. Split onto nested SVG groups.
+- A horizontal `objectBoundingBox` gradient on a zero-width vertical stroke degenerates
+  and paints nothing — that is why the lamp's chain rods and finial were invisible.
+- Three of my own test expectations were wrong, not the code: Holy Saturday is a Saturday
+  (Glorious mysteries by the weekday rule), February 2026 has four fast days not three
+  (Ember Saturday falls on the 28th), and a rolling 7-day window back from the 27th
+  includes the 21st.
+
+### Still open
+- Phone test of push end to end — the last unproven piece.
+- Holy Week mysteries: the rule as written gives Joyful on Holy Thursday and Glorious on
+  Holy Saturday. ASK THE CHAPLAIN.
+- Volume splits for both breviaries are still `confirmed: false`.
+- Sanctoral cycle incomplete; `rank` only populated for Sundays and principal feasts.
+- `morning-prayer`/`evening-prayer` should let the user nominate which hours discharge
+  them, now that we know it is any two of his choosing.
