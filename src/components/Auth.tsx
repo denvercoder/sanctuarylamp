@@ -1,18 +1,24 @@
 import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
-import { supabase } from '../lib/supabase'
+import { authConfigured, getSupabase } from '../lib/supabase'
 
 export function useSession(): { session: Session | null; loading: boolean } {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!supabase) { setLoading(false); return }
-    void supabase.auth.getSession().then(({ data }) => {
+    if (!authConfigured) { setLoading(false); return }
+    let unsubscribe: (() => void) | undefined
+    let cancelled = false
+    void getSupabase().then(async (sb) => {
+      if (!sb || cancelled) { setLoading(false); return }
+      const { data } = await sb.auth.getSession()
+      if (cancelled) return
       setSession(data.session); setLoading(false)
+      const { data: sub } = sb.auth.onAuthStateChange((_e, s) => setSession(s))
+      unsubscribe = () => sub.subscription.unsubscribe()
     })
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setSession(s))
-    return () => sub.subscription.unsubscribe()
+    return () => { cancelled = true; unsubscribe?.() }
   }, [])
 
   return { session, loading }
@@ -31,14 +37,16 @@ export function SignIn({ onDone }: { onDone?: () => void }) {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
-  if (!supabase) {
+  if (!authConfigured) {
     return <p className="note">Sync is not configured in this build.</p>
   }
 
   const send = async (e: React.FormEvent) => {
     e.preventDefault()
     setBusy(true); setError(null)
-    const { error } = await supabase!.auth.signInWithOtp({
+    const sb = await getSupabase()
+    if (!sb) { setBusy(false); setError('Sync is not configured.'); return }
+    const { error } = await sb.auth.signInWithOtp({
       email, options: { emailRedirectTo: window.location.origin },
     })
     setBusy(false)
@@ -73,9 +81,10 @@ export function SignIn({ onDone }: { onDone?: () => void }) {
 }
 
 export function SignOut() {
-  if (!supabase) return null
+  if (!authConfigured) return null
   return (
-    <button type="button" className="pill" onClick={() => void supabase!.auth.signOut()}>
+    <button type="button" className="pill"
+            onClick={() => void getSupabase().then((sb) => sb?.auth.signOut())}>
       Sign out
     </button>
   )

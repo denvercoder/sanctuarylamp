@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { dayInfo, todayLocal } from './lib/kalendar'
 import { lumen as computeLumen, planDay } from './lib/rule/evaluate'
 import type { Completion, CompletionState, Profile } from './lib/rule/types'
@@ -13,12 +13,22 @@ import {
 } from './lib/sync'
 import { Today } from './components/Today'
 import { Recollection } from './components/Recollection'
-import { Settings } from './components/Settings'
-import { Fidelity } from './components/Fidelity'
-import { Examen } from './components/Examen'
-import { Report } from './components/Report'
+
+
+
+
 import type { ExamenEntry, Resolution } from './lib/examen'
 import { useSession } from './components/Auth'
+
+/**
+ * The secondary screens load on demand. Opening the app to check off a Rosary should not
+ * wait on the code for a monthly report, and on a five-year-old phone that difference is
+ * the one the user actually feels.
+ */
+const Settings = lazy(() => import('./components/Settings').then((m) => ({ default: m.Settings })))
+const Fidelity = lazy(() => import('./components/Fidelity').then((m) => ({ default: m.Fidelity })))
+const Examen = lazy(() => import('./components/Examen').then((m) => ({ default: m.Examen })))
+const Report = lazy(() => import('./components/Report').then((m) => ({ default: m.Report })))
 
 const COLOUR_VAR: Record<string, string> = {
   white: 'var(--lit-white)', red: 'var(--lit-red)', green: 'var(--lit-green)',
@@ -139,17 +149,17 @@ export default function App() {
 
   if (reportOpen) {
     return (
-      <Report
+      <Suspense fallback={<div className="page" />}><Report
         rule={rule} profile={profile} history={history}
         resolutions={resolutions} examen={examenEntries}
         onClose={() => setReportOpen(false)}
-      />
+      /></Suspense>
     )
   }
 
   if (examenOpen) {
     return (
-      <Examen
+      <Suspense fallback={<div className="page" />}><Examen
         profile={profile} resolutions={resolutions} entries={examenEntries}
         todayIso={info.iso}
         onStart={(rs) => { setResolutions(rs); void saveResolutions(rs) }}
@@ -157,26 +167,26 @@ export default function App() {
           void recordExamen(resolutionId, date, patch).then(loadExamen).then(setExamenEntries)
         }}
         onClose={() => setExamenOpen(false)}
-      />
+      /></Suspense>
     )
   }
 
   if (fidelityOpen) {
     return (
-      <Fidelity
+      <Suspense fallback={<div className="page" />}><Fidelity
         rule={rule} profile={profile} history={history}
         onClose={() => setFidelityOpen(false)}
-      />
+      /></Suspense>
     )
   }
 
   if (settingsOpen) {
     return (
-      <Settings
+      <Suspense fallback={<div className="page" />}><Settings
         profile={profile} session={session}
         onChange={(p) => void onProfileChange(p)}
         onClose={() => setSettingsOpen(false)}
-      />
+      /></Suspense>
     )
   }
 

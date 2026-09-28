@@ -6,7 +6,7 @@
  * with no account at all. Nothing in the UI waits on any of it.
  */
 
-import { supabase } from './supabase'
+import { getSupabase } from './supabase'
 import { db, loadHistory } from '../db'
 import type { Completion, Profile } from './rule/types'
 import type { Reminder } from './reminders'
@@ -43,6 +43,7 @@ export async function drainPendingMarks(): Promise<number> {
 }
 
 export async function pushProfile(profile: Profile): Promise<void> {
+  const supabase = await getSupabase()
   if (!supabase) return
   const { data } = await supabase.auth.getUser()
   if (!data.user) return
@@ -51,6 +52,7 @@ export async function pushProfile(profile: Profile): Promise<void> {
 }
 
 export async function pullProfile(): Promise<Profile | null> {
+  const supabase = await getSupabase()
   if (!supabase) return null
   const { data: u } = await supabase.auth.getUser()
   if (!u.user) return null
@@ -66,6 +68,7 @@ export async function pullProfile(): Promise<Profile | null> {
  * marked differently on two devices — and because both answers are the user's own.
  */
 export async function syncCompletions(): Promise<{ up: number; down: number }> {
+  const supabase = await getSupabase()
   if (!supabase) return { up: 0, down: 0 }
   const { data: u } = await supabase.auth.getUser()
   if (!u.user) return { up: 0, down: 0 }
@@ -113,6 +116,7 @@ export async function syncCompletions(): Promise<{ up: number; down: number }> {
 }
 
 export async function saveSubscription(sub: PushSubscription): Promise<void> {
+  const supabase = await getSupabase()
   if (!supabase) return
   const { data: u } = await supabase.auth.getUser()
   if (!u.user) return
@@ -136,6 +140,7 @@ export async function saveSubscription(sub: PushSubscription): Promise<void> {
  * without accumulating stale rows or double-ringing.
  */
 export async function publishReminders(reminders: Reminder[]): Promise<number> {
+  const supabase = await getSupabase()
   if (!supabase) return 0
   const { data: u } = await supabase.auth.getUser()
   if (!u.user) return 0

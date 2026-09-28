@@ -1,6 +1,42 @@
+import { readFileSync } from 'node:fs'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import { parseRule } from './src/lib/rule/load'
+
+const RULE_FILE = 'rules/sspx-third-order.us-1980.yaml'
+const RULE_ID = 'virtual:sanctuarylamp-rule'
+
+/**
+ * Compile the Rule to JSON at build time.
+ *
+ * Two reasons. First, it keeps the YAML parser out of the client bundle entirely — the
+ * Rule never changes at runtime, so shipping a parser to read a fixed file is pure
+ * weight on a phone in a chapel basement.
+ *
+ * Second and better: parsing happens during the build, so a malformed Rule breaks the
+ * BUILD rather than the app. The validation in parseRule exists precisely because a rule
+ * that silently drops an obligation is the worst failure this project has, and this moves
+ * that check as early as it can possibly go.
+ */
+function ruleAsJson(): Plugin {
+  const load = () => {
+    const rule = parseRule(readFileSync(RULE_FILE, 'utf8'))
+    return `export const rule = ${JSON.stringify(rule)}`
+  }
+  return {
+    name: 'rule-as-json',
+    resolveId: (id) => (id === RULE_ID ? `\0${RULE_ID}` : null),
+    load: (id) => (id === `\0${RULE_ID}` ? load() : null),
+    configureServer(server) {
+      // Editing a rule file should reload the app, same as editing source.
+      server.watcher.add(RULE_FILE)
+      server.watcher.on('change', (file) => {
+        if (file.endsWith(RULE_FILE)) server.ws.send({ type: 'full-reload' })
+      })
+    },
+  }
+}
 
 /**
  * Fail the build when a required environment variable is missing.
@@ -34,6 +70,7 @@ function requireEnv(names: string[]): Plugin {
 
 export default defineConfig({
   plugins: [
+    ruleAsJson(),
     requireEnv([
       'VITE_SUPABASE_URL',
       'VITE_SUPABASE_PUBLISHABLE_KEY',
