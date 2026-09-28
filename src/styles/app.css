@@ -474,3 +474,55 @@ body[data-triduum='true'] .ribbon { background: #2A2422; box-shadow: none; }
   font-variant-caps: small-caps; letter-spacing: 0.1em;
 }
 .examen__row--today circle { fill: var(--parchment); }
+
+/* ── The monthly recollection ─────────────────────────────────────────────── */
+
+.report__head { margin: 1.5rem 0 1rem; }
+.report__title { font-size: 1.5rem; font-weight: 400; margin: 0; }
+.report__sub { color: var(--text-dim); font-size: 0.86rem; margin: 0.2rem 0 0; font-style: italic; }
+.report__h3 {
+  font-size: 0.76rem; font-weight: 400; font-variant-caps: small-caps;
+  letter-spacing: 0.2em; color: var(--brass);
+  margin: 1.6rem 0 0.5rem; border-bottom: 1px solid var(--hairline); padding-bottom: 0.3rem;
+}
+.report__line { margin: 0.4rem 0; }
+.report__table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+.report__table th {
+  text-align: left; font-weight: 400; font-variant-caps: small-caps;
+  letter-spacing: 0.1em; font-size: 0.72rem; color: var(--brass);
+  border-bottom: 1px solid var(--hairline); padding: 0.3rem 0.4rem 0.3rem 0;
+}
+.report__table th:not(:first-child), .report__table td:not(:first-child) {
+  text-align: right; width: 3.4rem;
+}
+.report__table td {
+  padding: 0.45rem 0.4rem 0.45rem 0; vertical-align: top;
+  border-bottom: 1px solid var(--hairline);
+}
+.report__question {
+  display: block; color: var(--rubric); font-style: italic;
+  font-size: 0.78rem; margin-top: 0.15rem; max-width: 26rem;
+}
+.report__rules { display: grid; gap: 1.5rem; margin-top: 0.8rem; }
+.report__rules span { display: block; border-bottom: 1px solid var(--hairline); height: 0; }
+
+/* ── Print ────────────────────────────────────────────────────────────────── */
+/* Paper is white and ink is black. The whole dark theme is a screen affordance,
+   and carrying it onto a page would waste toner and read badly in a parlour. */
+
+@media print {
+  :root {
+    --bg: #fff; --surface: #fff; --text: #111; --text-dim: #555;
+    --rubric: #8E2B20; --hairline: #bbb; --brass: #6b5a36;
+  }
+  html, body { background: #fff !important; color: #111 !important; font-size: 11pt; }
+  .no-print, .topbar, .ribbon, .lamp, .lamp-great { display: none !important; }
+  .page { max-width: none; padding: 0; }
+  .report__h3 { color: #6b5a36; }
+  .report__table { font-size: 10pt; }
+  .report__question { color: #8E2B20; }
+  .report__rules { gap: 1.8rem; }
+  .report__rules span { border-bottom: 1px solid #999; }
+  section { break-inside: avoid; }
+  @page { margin: 18mm; }
+}

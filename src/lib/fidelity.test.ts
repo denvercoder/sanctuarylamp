@@ -2,7 +2,9 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { parseISO } from './kalendar'
 import { parseRule } from './rule/load'
-import { fidelityRange, liturgicalYearBounds, summarise } from './fidelity'
+import {
+  fidelityRange, itemSummaries, liturgicalYearBounds, monthBounds, summarise,
+} from './fidelity'
 import type { Completion, Profile } from './rule/types'
 
 const rule = parseRule(readFileSync('rules/sspx-third-order.us-1980.yaml', 'utf8'))
@@ -113,5 +115,63 @@ describe('performance', () => {
     expect(days.length).toBeGreaterThan(360)
     // Generous: this runs on a five-year-old phone, and it must not block paint.
     expect(ms).toBeLessThan(400)
+  })
+})
+
+describe('per-item summaries for the monthly recollection', () => {
+  const { from, to } = monthBounds('2026-09')
+
+  it('counts the days each obligation was actually due', () => {
+    const items = itemSummaries(rule, profile, [], from, to)
+    const rosary = items.find((i) => i.itemId === 'rosary')!
+    expect(rosary.due).toBe(30) // daily, all of September
+    const sunday = items.find((i) => i.itemId === 'sunday-mass')!
+    expect(sunday.due).toBe(4)  // four Sundays in September 2026
+  })
+
+  it('carries the Rule\'s own examen question alongside the record', () => {
+    const items = itemSummaries(rule, profile, [], from, to)
+    expect(items.find((i) => i.itemId === 'rosary')!.examenQuestion)
+      .toMatch(/meditating on the Mysteries/)
+  })
+
+  it('separates kept, excused and noted', () => {
+    const history: Completion[] = [
+      kept('rosary', '2026-09-02'),
+      { itemId: 'rosary', date: '2026-09-03', state: 'excused', at: 0 },
+      { itemId: 'rosary', date: '2026-09-04', state: 'noted', at: 0 },
+    ]
+    const r = itemSummaries(rule, profile, history, from, to)
+      .find((i) => i.itemId === 'rosary')!
+    expect([r.kept, r.excused, r.noted]).toEqual([1, 1, 1])
+  })
+
+  it('reports counts only — no score, percentage or grade', () => {
+    const items = itemSummaries(rule, profile, [], from, to)
+    for (const i of items) {
+      expect(Object.keys(i).sort()).toEqual(
+        ['due', 'examenQuestion', 'excused', 'itemId', 'kept', 'noted', 'title'],
+      )
+    }
+  })
+
+  it('picks up fast days from the calendar, not from a fixed list', () => {
+    const feb = monthBounds('2026-02')
+    const fast = itemSummaries(rule, profile, [], feb.from, feb.to)
+      .find((i) => i.itemId === 'fast')!
+    // Ash Wednesday (18th) plus all three spring Ember Days (25th, 27th, 28th) —
+    // the Ember Saturday still falls inside February in 2026.
+    expect(fast.due).toBe(4)
+  })
+})
+
+describe('monthBounds', () => {
+  it('spans a whole calendar month', () => {
+    const { from, to } = monthBounds('2026-02')
+    expect(from.toISOString().slice(0, 10)).toBe('2026-02-01')
+    expect(to.toISOString().slice(0, 10)).toBe('2026-02-28')
+  })
+  it('handles a 31-day month', () => {
+    expect(monthBounds('2026-12').to.toISOString().slice(0, 10)).toBe('2026-12-31')
   })
 })

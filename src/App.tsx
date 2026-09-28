@@ -16,6 +16,7 @@ import { Recollection } from './components/Recollection'
 import { Settings } from './components/Settings'
 import { Fidelity } from './components/Fidelity'
 import { Examen } from './components/Examen'
+import { Report } from './components/Report'
 import type { ExamenEntry, Resolution } from './lib/examen'
 import { useSession } from './components/Auth'
 
@@ -32,6 +33,7 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [fidelityOpen, setFidelityOpen] = useState(false)
   const [examenOpen, setExamenOpen] = useState(false)
+  const [reportOpen, setReportOpen] = useState(false)
   const [resolutions, setResolutions] = useState<Resolution[]>([])
   const [examenEntries, setExamenEntries] = useState<ExamenEntry[]>([])
   const { session } = useSession()
@@ -135,6 +137,16 @@ export default function App() {
 
   if (!ready) return null
 
+  if (reportOpen) {
+    return (
+      <Report
+        rule={rule} profile={profile} history={history}
+        resolutions={resolutions} examen={examenEntries}
+        onClose={() => setReportOpen(false)}
+      />
+    )
+  }
+
   if (examenOpen) {
     return (
       <Examen
@@ -172,6 +184,7 @@ export default function App() {
     <>
       <div className="topbar">
         <button type="button" onClick={() => setExamenOpen(true)}>Examen</button>
+        <button type="button" onClick={() => setReportOpen(true)}>Report</button>
         <button type="button" onClick={() => setFidelityOpen(true)}>Fidelity</button>
         <button type="button" onClick={() => setSettingsOpen(true)}>Settings</button>
       </div>

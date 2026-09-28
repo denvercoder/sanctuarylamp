@@ -108,3 +108,66 @@ export function liturgicalYearBounds(on: Date): { from: Date; to: Date } {
   const to = addDays(on.getTime() >= adventThisYear.getTime() ? advent1(y + 1) : adventThisYear, -1)
   return { from, to }
 }
+
+export type ItemSummary = {
+  itemId: string
+  title: string
+  examenQuestion?: string
+  /** Days in the range on which this item was due. */
+  due: number
+  kept: number
+  excused: number
+  noted: number
+}
+
+/**
+ * Per-obligation record across a range, for the monthly recollection.
+ *
+ * Reports what happened, and nothing else. No percentage, no grade, no "score" — a
+ * director reads the counts and the Rule's own question beside them and draws their own
+ * conclusion, which is their job and not this app's.
+ */
+export function itemSummaries(
+  rule: Rule, profile: Profile, history: Completion[], from: Date, to: Date,
+): ItemSummary[] {
+  const acc = new Map<string, ItemSummary>()
+  const marks = new Map<string, Map<string, Completion['state']>>()
+  for (const c of history) {
+    if (!marks.has(c.date)) marks.set(c.date, new Map())
+    marks.get(c.date)!.set(c.itemId, c.state)
+  }
+
+  for (let d = from; d.getTime() <= to.getTime(); d = addDays(d, 1)) {
+    const info = dayInfo(d)
+    const plan = planDay(rule, info, profile, history)
+    const dayMarks = marks.get(iso(d))
+
+    for (const planned of [...plan.obligations, ...plan.penance, ...plan.counsels]) {
+      const id = planned.item.id
+      if (!acc.has(id)) {
+        acc.set(id, {
+          itemId: id, title: planned.item.title,
+          examenQuestion: planned.item.examenQuestion,
+          due: 0, kept: 0, excused: 0, noted: 0,
+        })
+      }
+      const s = acc.get(id)!
+      s.due++
+      const state = dayMarks?.get(id)
+      if (state === 'kept') s.kept++
+      else if (state === 'excused') s.excused++
+      else if (state === 'noted') s.noted++
+    }
+  }
+
+  return [...acc.values()].sort((a, b) => b.due - a.due)
+}
+
+/** Calendar month bounds for a YYYY-MM string. */
+export function monthBounds(yyyymm: string): { from: Date; to: Date } {
+  const [y, m] = yyyymm.split('-').map(Number) as [number, number]
+  return {
+    from: new Date(Date.UTC(y, m - 1, 1)),
+    to: new Date(Date.UTC(y, m, 0)),
+  }
+}
