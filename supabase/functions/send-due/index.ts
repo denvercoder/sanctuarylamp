@@ -21,6 +21,20 @@ const VAPID_PUBLIC = Deno.env.get('VAPID_PUBLIC_KEY') ?? ''
 const VAPID_PRIVATE = Deno.env.get('VAPID_PRIVATE_KEY') ?? ''
 const VAPID_SUBJECT = Deno.env.get('VAPID_SUBJECT') ?? 'mailto:admin@sanctuarylamp.com'
 
+/**
+ * A shared secret that only the cron job knows.
+ *
+ * Deliberately NOT the service-role key. That key bypasses every row-level security
+ * policy in the database, and cron does not need to read a single row — it only needs to
+ * prove it is cron. Putting the most powerful credential in the project inside the
+ * database, to authenticate a call that requires no privileges at all, trades real risk
+ * for no benefit.
+ *
+ * Fail-closed: with no secret configured the sender refuses to run rather than leaving
+ * an unauthenticated endpoint that anyone can use to drain the queue.
+ */
+const CRON_SECRET = Deno.env.get('CRON_SECRET') ?? ''
+
 const db = createClient(SUPABASE_URL, SERVICE_KEY, {
   auth: { persistSession: false },
 })
@@ -49,6 +63,7 @@ Deno.serve(async (req) => {
    */
   const url = new URL(req.url)
   if (req.method === 'GET' || url.searchParams.has('health')) {
+    // Health stays open: it reveals only the public key, which ships in every bundle.
     return json({
       ok: true,
       vapid: {
@@ -57,6 +72,17 @@ Deno.serve(async (req) => {
         subject: VAPID_SUBJECT,
       },
     })
+  }
+
+  if (!CRON_SECRET) {
+    return json({
+      error: 'CRON_SECRET is not configured; refusing to send.',
+      hint: 'supabase secrets set CRON_SECRET=<random>, and store the same value in '
+        + 'Vault as cron_secret. See docs/SETUP.md.',
+    }, 503)
+  }
+  if (req.headers.get('x-cron-secret') !== CRON_SECRET) {
+    return json({ error: 'unauthorized' }, 401)
   }
 
   // Only unsent reminders that have actually come due. A missed cron tick simply

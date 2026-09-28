@@ -4,10 +4,10 @@
 -- the rows it reads: no network hop per tick, and per-minute accuracy for reminders tied
 -- to solar times. See docs/SETUP.md.
 --
--- Safe to apply BEFORE the service-role key is in Vault and before the function is
--- deployed: the job is only scheduled once the secret exists, so this migration never
--- leaves a job failing every minute in the cron log. Re-run it after creating the
--- secret and it will schedule then.
+-- Safe to apply BEFORE the secret exists and before the function is deployed: the job is
+-- only scheduled once vault holds 'cron_secret', so this migration never leaves a job
+-- failing every minute in the cron log. Re-run select public.schedule_send_due() after
+-- creating the secret and it will schedule then.
 
 create extension if not exists pg_cron;
 create extension if not exists pg_net;
@@ -20,11 +20,13 @@ as $fn$
 declare
   has_secret boolean;
 begin
-  select exists (select 1 from vault.decrypted_secrets where name = 'service_role_key')
+  -- A purpose-made shared secret, NOT the service-role key: cron needs to prove it is
+  -- cron, not to read rows, so it should not hold a credential that bypasses RLS.
+  select exists (select 1 from vault.decrypted_secrets where name = 'cron_secret')
     into has_secret;
 
   if not has_secret then
-    return 'skipped: create the vault secret "service_role_key", then run '
+    return 'skipped: create the vault secret "cron_secret", then run '
            || 'select public.schedule_send_due();';
   end if;
 
@@ -39,8 +41,8 @@ begin
       url     := 'https://gjpagpiagbrakvprjzxk.supabase.co/functions/v1/send-due',
       headers := jsonb_build_object(
         'Content-Type',  'application/json',
-        'Authorization', 'Bearer ' || (select decrypted_secret from vault.decrypted_secrets
-                                        where name = 'service_role_key')
+        'x-cron-secret', (select decrypted_secret from vault.decrypted_secrets
+                           where name = 'cron_secret')
       ),
       body    := '{}'::jsonb
     );

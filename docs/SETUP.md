@@ -151,3 +151,50 @@ update public.push_subscriptions set expired_at = now() where expired_at is null
 **Storage:** the private key belongs in Supabase Edge Function secrets and a password
 manager, and nowhere else. Never in the repo, never in Netlify (Netlify only ever needs
 the public half), and never in a chat window.
+
+
+## Why cron does not use the service-role key
+
+The obvious way to let `pg_cron` call an Edge Function is to have it send the service-role
+key as a bearer token. We deliberately do not.
+
+That key bypasses **every** row-level security policy in the database. Cron does not read
+a single row — it only needs to prove that it is cron. Storing the most powerful
+credential in the project inside the database, in order to authenticate a call that
+requires no privileges at all, is real risk bought for no benefit. Anything that can read
+`vault.decrypted_secrets` then holds total access to every user's completions and examen.
+
+Instead the sender checks a purpose-made shared secret in an `x-cron-secret` header. It
+authenticates exactly one caller to exactly one endpoint, and it grants nothing if it
+leaks beyond letting someone deliver notifications a little early.
+
+The sender **fails closed**: with no `CRON_SECRET` configured it returns 503 and refuses
+to send, rather than leaving an unauthenticated endpoint anyone can drain the queue with.
+
+### Setting it up
+
+Generates a random secret, installs it in the function, and prints the SQL to paste:
+
+```bash
+SECRET=$(openssl rand -base64 32 | tr -d '\n' | tr '+/' '-_') && npx supabase secrets set CRON_SECRET="$SECRET" >/dev/null && echo "select vault.create_secret('$SECRET', 'cron_secret');"
+```
+
+Paste that line into the Supabase SQL editor, then start the job:
+
+```sql
+select public.schedule_send_due();
+```
+
+It returns `scheduled: sanctuarylamp-send-due, every minute`, or tells you the Vault
+secret is still missing.
+
+### Checking it afterwards
+
+```bash
+curl -s https://gjpagpiagbrakvprjzxk.supabase.co/functions/v1/send-due
+```
+
+Health is intentionally open — it reveals only the VAPID **public** key, which ships in
+every client bundle. Compare it against `VITE_VAPID_PUBLIC_KEY` to prove the two halves of
+the key pair belong together; a mismatch there is the one failure that produces no visible
+error anywhere.
