@@ -1,4 +1,5 @@
 import { ordoLine } from '../lib/kalendar'
+import { MYSTERIES, mysteriesFor, MYSTERY_NAMES } from '../lib/rosary'
 import { bookForHour, guide, type Hour } from '../lib/books'
 import { Lamp } from './Lamp'
 import { Wick } from './Wick'
@@ -6,13 +7,14 @@ import type { DayPlan, PlannedItem } from '../lib/rule/evaluate'
 import type { CompletionState, Profile, Rule } from '../lib/rule/types'
 
 function Item({
-  planned, onMark, onEnter, hideMeta, bookNote,
+  planned, onMark, onEnter, hideMeta, bookNote, rosaryNote,
 }: {
   planned: PlannedItem
   onMark: (id: string, state: CompletionState | null) => void
   onEnter: (id: string) => void
   hideMeta: boolean
   bookNote?: string
+  rosaryNote?: string
 }) {
   const { item, state, alternatives, due } = planned
   const cycle = () => onMark(item.id, state === 'kept' ? null : 'kept')
@@ -35,6 +37,7 @@ function Item({
         )}
         {item.durationMin && <div className="rubric">{item.durationMin} minutes</div>}
         {bookNote && <div className="rubric">{bookNote}</div>}
+        {rosaryNote && <div className="rubric">{rosaryNote}</div>}
         {alternatives.length > 0 && (
           <div className="rubric">
             Discharged by either: {alternatives.map((a) => a.title).join(', or ')}
@@ -93,6 +96,13 @@ export function Today({
   const HOURS: Hour[] =
     ['matins', 'lauds', 'prime', 'terce', 'sext', 'none', 'vespers', 'compline']
 
+  /** Which mysteries today. The Rosary is the same prayer every day; this is not. */
+  const mystery = mysteriesFor(info)
+  const rosaryFor = (itemId: string): string | undefined =>
+    itemId === 'rosary'
+      ? `${MYSTERY_NAMES[mystery]} — ${MYSTERIES[mystery].join(' · ')}`
+      : undefined
+
   const noteFor = (planned: PlannedItem): string | undefined => {
     const prayerId = planned.item.prayerId
       ?? planned.alternatives.find((a) => a.prayerId)?.prayerId
@@ -134,7 +144,7 @@ export function Today({
             <h2>Today</h2>
             {plan.obligations.map((p) => (
               <Item key={p.item.id} planned={p} onMark={onMark} onEnter={onEnter} hideMeta={hideMeta}
-                bookNote={noteFor(p)} />
+                bookNote={noteFor(p)} rosaryNote={rosaryFor(p.item.id)} />
             ))}
           </section>
         )}
@@ -156,7 +166,7 @@ export function Today({
             <p className="rubric">Bound today by the calendar, not by choice.</p>
             {plan.penance.map((p) => (
               <Item key={p.item.id} planned={p} onMark={onMark} onEnter={onEnter} hideMeta={hideMeta}
-                bookNote={noteFor(p)} />
+                bookNote={noteFor(p)} rosaryNote={rosaryFor(p.item.id)} />
             ))}
           </section>
         )}
@@ -166,7 +176,7 @@ export function Today({
             <h2>In its season</h2>
             {plan.periodic.map((p) => (
               <Item key={p.item.id} planned={p} onMark={onMark} onEnter={onEnter} hideMeta={hideMeta}
-                bookNote={noteFor(p)} />
+                bookNote={noteFor(p)} rosaryNote={rosaryFor(p.item.id)} />
             ))}
           </section>
         )}

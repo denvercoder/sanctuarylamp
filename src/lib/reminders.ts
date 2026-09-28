@@ -14,6 +14,7 @@ import { addDays, dayInfo, type DayInfo } from './kalendar'
 import { planDay } from './rule/evaluate'
 import { resolveAnchor } from './solar'
 import type { Completion, Profile, Rule, RuleItem } from './rule/types'
+import { mysteryLine } from './rosary'
 
 export type Reminder = {
   itemId: string
@@ -70,9 +71,13 @@ export function remindersForDay(
     out.push({
       itemId: planned.item.id,
       title: planned.item.title,
-      body: planned.alternatives.length
-        ? planned.alternatives.map((a) => a.title).join(', or ')
-        : undefined,
+      // The Rosary is the same prayer every day; which mysteries is not, so the
+      // notification carries it rather than making you open the app to find out.
+      body: planned.item.id === 'rosary'
+        ? mysteryLine(info)
+        : planned.alternatives.length
+          ? planned.alternatives.map((a) => a.title).join(', or ')
+          : undefined,
       day: info.iso,
       fireAt,
     })

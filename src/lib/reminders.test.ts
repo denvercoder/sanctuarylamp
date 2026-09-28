@@ -130,3 +130,15 @@ describe('the upcoming queue', () => {
     expect(rs.some((r) => r.itemId === 'fast' && r.day === '2026-02-18')).toBe(true)
   })
 })
+
+describe('the Rosary reminder names the day\'s mysteries', () => {
+  it('carries them in the notification body', () => {
+    const p: Profile = { ...base, itemTimes: { rosary: '20:00' } }
+    const thursday = remindersForDay(rule, dayInfo(parseISO('2026-09-24')), p)
+      .find((r) => r.itemId === 'rosary')!
+    expect(thursday.body).toBe('the Joyful Mysteries')
+    const friday = remindersForDay(rule, dayInfo(parseISO('2026-09-25')), p)
+      .find((r) => r.itemId === 'rosary')!
+    expect(friday.body).toBe('the Sorrowful Mysteries')
+  })
+})

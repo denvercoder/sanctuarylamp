@@ -199,3 +199,18 @@ Decisions and requirements as they land. Newest at the bottom.
 ### Stage 3 remains
 `supabase login` / `link`, then `db push`, secrets, `functions deploy`, the cron Vault
 secret — and the end-to-end push test, which is still the one unproven piece.
+- **Rosary mysteries by day, 1962** (`src/lib/rosary.ts`). Three sets, not four — the
+  Luminous Mysteries are from *Rosarium Virginis Mariae* (2002) and including them would
+  be the most obvious possible tell that the app did not know what it was doing.
+  - Joyful: Mondays, Thursdays, and Sundays from Advent until Lent
+  - Sorrowful: Tuesdays, Fridays, and the Sundays of Lent and Passiontide
+  - Glorious: Wednesdays, Saturdays, and the Sundays from Easter to Advent
+  - Explicitly NOT the modern scheme, which moved Joyful to Saturday and gave Thursday to
+    the Luminous. Tests assert both differences.
+  - Shown on the Rosary item with all five decades, and carried in the notification body
+    so you do not have to open the app to find out which mysteries it is.
+  - **Open question — Holy Week.** The distribution is weekday-based outside Sundays and
+    says nothing about the Triduum, so read literally it gives the Joyful Mysteries on
+    Holy Thursday and the Glorious on Holy Saturday. Many pray the Sorrowful throughout.
+    The engine follows the rule as written and raises the question rather than inventing
+    an exception. ASK THE CHAPLAIN.
