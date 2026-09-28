@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Lamp } from './Lamp'
+import { LampGreat } from './LampGreat'
+import { useMediaQuery } from '../lib/useMediaQuery'
 import type { RuleItem } from '../lib/rule/types'
 import type { DayInfo } from '../lib/kalendar'
 import { ordoLine } from '../lib/kalendar'
@@ -26,6 +28,13 @@ export function Recollection({
   onDone: () => void
   onExit: () => void
 }) {
+  /**
+   * On a large screen the compact lamp floats in the middle of an enormous dark room
+   * doing nothing, so Recollection swaps in a different, far more detailed object.
+   * Phones and tablets keep the compact one, where the extra detail would only blur
+   * and the animation cost buys nothing.
+   */
+  const great = useMediaQuery('(min-width: 900px) and (min-height: 620px)')
   const [controlsShown, setControlsShown] = useState(true)
   const hideTimer = useRef<number | undefined>(undefined)
   const [grown, setGrown] = useState(0)
@@ -69,15 +78,22 @@ export function Recollection({
 
   const shown = durationMin ? Math.max(lumen, 0.25 + 0.75 * grown) : Math.max(lumen, 0.55)
 
+  // The room's light is CSS, so the brightness has to reach it as a custom property.
+  useEffect(() => {
+    document.documentElement.style.setProperty('--lumen', String(extinguished ? 0 : shown))
+  }, [shown, extinguished])
+
   return (
     <div
-      className="recollection"
+      className={`recollection${great ? ' recollection--great' : ''}`}
       onClick={() => setControlsShown(true)}
       role="dialog"
       aria-label="Recollection"
     >
       <div className="recollection__inner">
-        <Lamp lumen={shown} size={200} extinguished={extinguished} />
+        {great
+          ? <LampGreat lumen={shown} extinguished={extinguished} />
+          : <Lamp lumen={shown} size={200} extinguished={extinguished} />}
         {item && <p className="recollection__title">{item.title}</p>}
         {/* No prayer text. The office is prayed from the user's own breviary — what
             software is good for is saying WHICH office. See docs/PLAN.md §8. */}

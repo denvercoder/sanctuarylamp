@@ -99,3 +99,39 @@ Inline SVG plus CSS, no canvas, no WebGL, no animation library.
 - `--lumen` is written to `:root` by one small hook. It is the only channel between app
   state and the lamp, which keeps the doctrine enforceable in one place — and reviewable.
 - Must render at 60fps on a five-year-old Android phone in a chapel basement on no signal.
+
+## The great lamp
+
+On a large screen the compact lamp floats in the middle of an enormous dark room doing
+nothing, so Recollection swaps in a different object rather than scaling the same one up:
+a full hanging sanctuary lamp — ceiling canopy, a chain of interlocking links, three
+strands splaying to a brass collar, a faceted red glass vessel with the float and wick
+riding on the oil inside it, and a base finial. It stands at `min(88vh, 1100px)`.
+
+**A lamp that fills a large screen is not a bigger picture of a lamp. It is a lamp that
+lights the room.** So the real work is done by the light rather than the object: a
+viewport-wide radial wash spilling to the edges, plus a faint warm floor-bounce beneath,
+both driven by the same `--lumen` as the flame. The dark around the lamp stops being empty
+and starts being a room.
+
+Fire is four independent tracks at co-prime periods — sway 4.3s, inner core 6.7s, halo
+9.7s, gutter 19.3s, with the room breathing at 31.1s. The combined cycle runs for hours.
+Each track drives a *different element*, because two animations on one element's
+`transform` silently resolve to whichever is declared last.
+
+Phones and tablets keep the compact lamp, where the extra detail would only blur and the
+animation cost buys nothing. The breakpoint is `(min-width: 900px) and (min-height: 620px)`
+— height matters, because a short landscape window has no room for a hanging lamp either.
+
+### Three bugs worth remembering
+
+- **A horizontal `linearGradient` on a zero-width vertical stroke paints nothing.** With
+  `objectBoundingBox` units the box has zero width and the gradient degenerates, which is
+  why the chain rods and the base finial were invisible. Flat colour for anything with no
+  width.
+- **The glass must be translucent** (`fill-opacity: 0.72`) or the fire behind it does not
+  exist. The fire is drawn behind the glass deliberately — that is how a sanctuary lamp
+  reads — which makes glass opacity load-bearing rather than decorative.
+- **`position: relative` on the great variant overrode `position: fixed` on the base**,
+  dropping the whole full-screen overlay back into normal flow. `fixed` already
+  establishes the containing block that the light's pseudo-elements need.

@@ -165,3 +165,8 @@ Decisions and requirements as they land. Newest at the bottom.
 - Geolocation permission flow for solar anchors (falls back to clock times without it)
 - `morning-prayer` / `evening-prayer` should let the user nominate which hours discharge
   them, rather than hard-coding Prime/Compline
+- **Recollection on desktop now uses a separate, far more detailed lamp** (`LampGreat`),
+  at `min(88vh, 1100px)`, with the room itself lit by a viewport-wide wash driven by
+  `--lumen`. Phones and tablets keep the compact lamp. See LAMP.md "The great lamp" —
+  including the three bugs (degenerate gradients on zero-width strokes, opaque glass
+  hiding the fire, and `position: relative` overriding the overlay's `fixed`).
