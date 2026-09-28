@@ -235,21 +235,44 @@ the lock screen without opening the app.
 
 ---
 
-## 8. Prayer texts, offline
+## 8. The book stays the book
 
-The app should be usable as the prayer book, so that checking a box and praying the prayer
-are the same gesture — tap the item, the text unfolds in place.
+**Sanctuary Lamp is not a prayer book and will not try to become one.**
 
-Latin and English in parallel columns, public-domain translations only, with a field for
-the user to paste their own. Bundled: Angelus, Regina Cæli, the Rosary (fifteen mysteries,
-Fatima prayers optional), the Litanies, De Profundis, the Divine Praises, morning and
-night prayers, acts of Faith/Hope/Charity/Contrition. Everything cached for offline use —
-a chapel basement has no signal.
+The people who keep a rule of life already own the books. The hand missal, the Roman
+Breviary, the manual of prayers — owning and using them *is* the culture this app serves.
+Prime and Compline get prayed from an Angelus Press Roman Breviary, in print, and that is
+not a deficiency to be solved. An app that reproduces the text is competing with
+iBreviary and Universalis on their own ground, for a need its users do not have, and
+taking on a pile of translation licensing to do it.
 
-**Copyright discipline:** no modern translation gets bundled without a license. The
-Little Office of the BVM in particular needs its translation vetted before it ships.
+So the app does the thing the book cannot: **it tells you which office it is.**
 
----
+That is an *ordo* — the thin annual booklet a traditional Catholic keeps beside the
+breviary precisely because the book itself cannot tell you which of its parts to pray
+today. It is the single most useful thing software can do for someone holding a breviary,
+and the calendar engine already computes every part of it:
+
+- the day and its rank
+- the season
+- **the liturgical colour, named** — which is how you set the ribbons
+- the commemorations, once the sanctoral lands
+- whether the Angelus or the Regina Cæli is said today
+
+Consequences, all of them good:
+
+- **The copyright problem mostly evaporates.** No bundled translations means no licensing,
+  no permission dependency, and nothing to renegotiate. See [SOURCES.md](SOURCES.md).
+- **Recollection gets better, not worse.** No wall of scrolling text competing with the
+  page you are actually reading. The phone lies on the prie-dieu showing a flame and the
+  day's designation while you hold the book. That is the correct relationship between the
+  two objects.
+- **The app gets smaller and faster**, which serves the sixty-frames-on-an-old-Android
+  goal directly.
+
+The one place text still belongs: a user's *own* text, pasted in — a proper of their
+chapter, a prayer for the Society, something their chaplain gave them. Their words, their
+copy, their business.
 
 ## 9. Intentions that actually get prayed
 
@@ -305,13 +328,17 @@ Netlify preference and still gives a real backend — Postgres, hosted auth, row
 security, cron, and realtime — without standing up servers.
 
 ```
-Next.js (App Router, TS)   →  Netlify (static + edge functions)
-Supabase                   →  Postgres + Auth + RLS + Realtime + pg_cron
-Service worker             →  Web Push (VAPID), offline cache
+Vite + React + TS (PWA)    →  Netlify (static, deploy previews, TLS)
+Supabase                   →  Postgres + Auth + RLS + Realtime + pg_cron + Edge Functions
+Service worker (hand-rolled)→ Web Push (VAPID) with action buttons, offline cache
 Dexie (IndexedDB)          →  local-first store, source of truth on device
 @sanctuarylamp/kalendar    →  pure-TS 1962 calendar engine (own package, unit-tested)
 @sanctuarylamp/rule        →  pure-TS rule evaluator (date + rule → today's obligations)
 ```
+
+**Not Next.js.** The source of truth is IndexedDB, it must work offline, and every screen is
+behind auth — so SSR buys nothing and costs us direct control of the service worker, which we
+need for push action buttons and offline prayer texts. Full reasoning in [SETUP.md](SETUP.md).
 
 - **Accounts:** Supabase Auth — email magic link and Apple/Google OAuth. Required for
   sync, household, and chapter features.

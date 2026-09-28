@@ -1,11 +1,14 @@
 # Rule of the Third Order of the Society of Saint Pius X
 # Normative edition: promulgated 1 November 1980 by Abp. Marcel Lefebvre.
 # Source: "Sursum Corda", Third Order of the SSPX (US District), No. 4, Winter 2013.
-# Reference edition for prayer texts and examen: Third Order Handbook, © 2024,
-#   Christ the King Priory, Langley BC (Canada District). See docs/RULE-EDITIONS.md.
+# Reference edition: Third Order Handbook, (c) 2024, Christ the King Priory, Langley BC.
+# See docs/RULE-EDITIONS.md and docs/SOURCES.md.
 #
-# Rule text is NOT reproduced in this file. `text:` fields are intentionally empty
-# pending permission from the District. Structure only. See docs/RULE-EDITIONS.md §Copyright.
+# WHAT THIS FILE IS: our structured interpretation of the Rule — what binds, how often,
+# on which days, and for whom. Item titles are our own plain descriptions, NOT the Rule's
+# wording. The Rule's own text is deliberately not reproduced here; `text:` fields stay
+# empty and the user supplies their own copy. The examination-of-conscience prompts are
+# carried verbatim by decision of the project owner (see docs/SOURCES.md).
 
 id: sspx-third-order
 tradition: sspx-third-order
@@ -56,7 +59,7 @@ items:
     kind: counsel        # a form that satisfies morning-prayer; the Founder encourages it
     cadence: { every: day }
     prayerId: prime
-    note: The Archbishop highlights the value of the divine office, encouraging members when possible to attend Prime and Compline.
+    note: The Rule names the Office as the preferred form of morning and evening prayer.
 
   - id: compline
     title: "Compline — the evening prayer of the Church"
@@ -75,13 +78,13 @@ items:
     cadence: { every: day }
 
   - id: rosary
-    title: Recitation of the Rosary
+    title: The Rosary
     kind: obligation
     cadence: { every: day }
     examenQuestion: Have I recited my Rosary devoutly, meditating on the Mysteries?
 
   - id: mass-or-meditation
-    title: Attendance at the Immemorial Mass, if possible, or fifteen minutes of meditation
+    title: Mass if possible; otherwise fifteen minutes of meditation
     kind: obligation
     cadence: { every: day }
     satisfiedByAny: [daily-mass, meditation]
@@ -102,7 +105,7 @@ items:
 
   # ---------- Weekly ----------
   - id: sunday-mass
-    title: Attendance at the Immemorial Mass, and not the Novus Ordo Missae
+    title: Sunday Mass in the traditional rite
     kind: obligation
     cadence: { every: week }
     onlyIf: [day:sunday]
@@ -110,14 +113,14 @@ items:
 
   # ---------- Fortnightly / monthly ----------
   - id: penance
-    title: The Sacrament of Penance
+    title: Confession
     kind: obligation
     cadence: { every: weeks, n: 2, fallback: { every: month } }
     examenQuestion: Have I been faithful in receiving the Sacrament of Penance with devotion at least once a month? Or have I made peace with my sins and imperfections?
 
   # ---------- Biennial ----------
   - id: retreat
-    title: A retreat
+    title: Retreat
     kind: obligation
     cadence: { every: years, n: 2 }
     examenQuestion: Have I thought seriously of making a retreat? Or have I neglected even to examine the possibility, claiming that it is too far, too costly, etc.?
@@ -142,7 +145,7 @@ items:
     examenQuestion: Have I kept the fasts of the Third Order — Vigils, Ember Days etc.? Or have I forgotten these days through negligence?
 
   - id: fast-immaculate-conception-vigil
-    title: Fast on the vigil of the Immaculate Conception (7 December)
+    title: Fast on 7 December, the old vigil of the Immaculate Conception
     kind: counsel
     cadence: { onDays: [day:vigil-of:immaculate-conception] }
     fromEdition: ca-2024
@@ -155,10 +158,15 @@ items:
     examenQuestion: Abstinence on Fridays? Or have I forgotten these days through negligence?
 
   - id: fast-priests
-    title: All Fridays in Lent, and the vigil of the Immaculate Conception
+    title: Lenten Fridays and 7 December
     kind: obligation
     appliesTo: [priest]
-    cadence: { onDays: [season:lent, day:friday, day:vigil-of:immaculate-conception] }
+    # "all Fridays in Lent" is a conjunction; a flat list would wrongly match every
+    # Friday of the year and the whole of Lent. Nesting is why Pred exists.
+    cadence:
+      onDays:
+        - all: [season:lent, day:friday]
+        - day:vigil-of:immaculate-conception
     fromEdition: ca-2024               # not in the 1980 text; priests only
 
   # ---------- Standing dispositions ----------
@@ -181,7 +189,7 @@ items:
     examenQuestion: Have I practiced sobriety?
 
   - id: mortify-media
-    title: Mortify one's use of the internet and all electronic media
+    title: Mortify use of the internet and electronic media
     kind: counsel
     cadence: { ongoing: true }
     fromEdition: ca-2024               # opt-in: the 2024 edition's update, not in yours
@@ -193,51 +201,52 @@ items:
     kind: counsel
     cadence: { ongoing: true }
     note: >
-      The acts of St. Pius X, the Catechism of the Council of Trent, the New Testament,
-      the Imitation of Christ, the lives of the saints. Try to spread good reading material.
+      The Rule names five sources: the acts of its patron, the Tridentine catechism,
+      the New Testament, the Imitation, and lives of the saints — and asks that good
+      reading be passed on to others, not merely consumed.
     examenQuestion: Have I been faithful to study and spiritual reading? Have I been apostolic, i.e. tried to spread good reading material?
 
   # ---------- The married ----------
   - id: marriage-laws
-    title: Observe the laws of marriage toward the goal of having a large family
+    title: Keep the Church's teaching on marriage and openness to a large family
     kind: obligation
     appliesTo: [married]
     cadence: { ongoing: true }
 
   - id: family-evening-prayers
-    title: Family evening prayers, and if possible the Holy Rosary, in the family
+    title: Family evening prayers, with the Rosary where possible
     kind: obligation
     appliesTo: [married]
     cadence: { every: day }
     when: { sun: dusk }
-    note: To make of the family home a sanctuary consecrated to the Hearts of Jesus and Mary.
+    note: The Rule frames the home itself as a consecrated place, not just a venue for prayers.
 
   - id: sunday-liturgical-life
-    title: Liturgical life paramount on Sundays and Feast days
+    title: Keep Sundays and feasts centred on the liturgy
     kind: obligation
     appliesTo: [married]
     cadence: { onDays: [day:sunday, rank:<=2] }
 
   - id: traditional-schools
-    title: Choose truly good and traditional schools, and contribute to their establishment
+    title: Choose and support traditional Catholic schools
     kind: obligation
     appliesTo: [parent]
     cadence: { ongoing: true }
 
   - id: prudent-leisure
-    title: Be prudent in the choice of leisure activities and of vacation spots
+    title: Choose leisure and holidays prudently
     kind: obligation
     appliesTo: [married]
     cadence: { ongoing: true }
 
   # ---------- Professional and social ----------
   - id: justice-charity
-    title: Pursue the duties of justice and charity, whether employer or employee
+    title: Justice and charity in work, as employer or employee
     kind: obligation
     cadence: { ongoing: true }
 
   - id: social-reign
-    title: Promote and defend the social reign of Our Lord Jesus Christ
+    title: Work for the social reign of Christ
     kind: obligation
     cadence: { ongoing: true }
 
@@ -248,6 +257,6 @@ profileRequires: [maritalState, hasChildren, isPriest]
 
 community:
   - id: chapter-meeting
-    title: General meetings called by the district priest in charge
+    title: District meetings
     cadence: { every: month }
     kind: counsel

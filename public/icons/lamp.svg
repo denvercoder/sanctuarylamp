@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="bloom" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#F2A15A" stop-opacity="0.9"/>
+      <stop offset="50%" stop-color="#C24A32" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#8E2B20" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="flame" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#FFF6DC"/>
+      <stop offset="40%" stop-color="#FFD98A"/>
+      <stop offset="75%" stop-color="#F2A15A"/>
+      <stop offset="100%" stop-color="#C24A32"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#6B1913"/>
+      <stop offset="35%" stop-color="#B8392A"/>
+      <stop offset="65%" stop-color="#8E2B20"/>
+      <stop offset="100%" stop-color="#57140F"/>
+    </linearGradient>
+    <linearGradient id="brass" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#6E5838"/>
+      <stop offset="38%" stop-color="#E3C88C"/>
+      <stop offset="70%" stop-color="#B08D57"/>
+      <stop offset="100%" stop-color="#5E4A2E"/>
+    </linearGradient>
+  </defs>
+
+
+  <!-- The flame, drawn large and bright so the icon reads at 32px.
+       Literal enclosure loses all contrast at small sizes. -->
+  <path d="M256 128
+           Q322 212 300 282
+           Q286 330 256 344
+           Q226 330 212 282
+           Q190 212 256 128 Z"
+        fill="url(#flame)"/>
+  <path d="M256 196 Q288 244 276 284 Q268 310 256 318 Q244 310 236 284 Q224 244 256 196 Z"
+        fill="#FFF6DC" opacity="0.85"/>
+
+  <!-- The red glass cup -->
+  <path d="M176 330 Q180 424 210 452 Q256 480 302 452 Q332 424 336 330 Z" fill="url(#glass)"/>
+  <ellipse cx="256" cy="330" rx="80" ry="20" fill="url(#brass)"/>
+  <path d="M206 352 Q200 412 220 442" stroke="#F0A98F" stroke-width="11"
+        fill="none" opacity="0.35" stroke-linecap="round"/>
+</svg>

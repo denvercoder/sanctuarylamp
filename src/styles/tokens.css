@@ -1,0 +1,90 @@
+/* Sanctuary Lamp — design tokens. See docs/COLOR.md. */
+
+:root {
+  /* The fixed palette. The lamp's glass is ALWAYS sanctuary red; it is not a theme slot. */
+  --ink:        #14110F;
+  --nave:       #1E1A17;
+  --nave-2:     #272220;
+  --parchment:  #F4EFE6;
+  --sanctuary:  #8E2B20;
+  --ember:      #C24A32;
+  --brass:      #B08D57;
+  --brass-dim:  #6E5838;
+
+  /* 1962 liturgical colours. Carried by the ribbon, the frontal and the chip — never
+     by the lamp. No blue: it was never generally approved. */
+  --lit-white:  #F2EAD8;
+  --lit-red:    #8E2B20;
+  --lit-green:  #3F5E4A;
+  --lit-violet: #4B2E5A;
+  --lit-black:  #14110F;
+  --lit-rose:   #C98B9B;
+  --lit-gold:   #B08D57;
+
+  /* Set per day by the app; defaults to green (Time after Pentecost). */
+  --today-colour: var(--lit-green);
+
+  /* The single channel between application state and the lamp. Floor 0.25, never 0,
+     except when the Church herself extinguishes it. See docs/LAMP.md. */
+  --lumen: 0.25;
+
+  --bg: var(--ink);
+  --surface: var(--nave);
+  --text: var(--parchment);
+  --text-dim: #9A9088;
+  --rubric: var(--ember);
+  --hairline: color-mix(in srgb, var(--brass) 28%, transparent);
+
+  --serif: 'Cardo', 'EB Garamond', Georgia, 'Times New Roman', serif;
+  --measure: 34rem;
+  --gutter: 1rem;
+}
+
+/* Light mode is the exception, not the default: this app is used in dark churches at
+   5:40 in the morning. It reads as a parchment page. */
+:root[data-theme='light'] {
+  --bg: var(--parchment);
+  --surface: #FBF7EF;
+  --text: #221D19;
+  --text-dim: #6A605A;
+  --rubric: var(--sanctuary);
+  --hairline: color-mix(in srgb, var(--brass-dim) 34%, transparent);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body { min-height: 100dvh; }
+
+/* Rubrics are red and italic, exactly as in a missal. `rubrica` means red. */
+.rubric {
+  color: var(--rubric);
+  font-style: italic;
+  font-variant-caps: small-caps;
+  letter-spacing: 0.06em;
+  font-size: 0.82rem;
+}
+
+.smallcaps {
+  font-variant-caps: small-caps;
+  letter-spacing: 0.14em;
+  font-weight: 400;
+}
+
+.hairline { border: 0; border-top: 1px solid var(--hairline); margin: 1.5rem 0; }
+
+:focus-visible { outline: 2px solid var(--ember); outline-offset: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
+}

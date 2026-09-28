@@ -1,0 +1,266 @@
+/* ── The lamp ─────────────────────────────────────────────────────────────── */
+
+.lamp { display: block; overflow: visible; }
+
+/* Everything the flame does is driven by --l, which the component sets from `lumen`.
+   Nothing else in the app may touch it. */
+.lamp__glow  { opacity: calc(0.10 + 0.72 * var(--l)); transition: opacity 1.2s ease; }
+.lamp__flame { opacity: calc(0.35 + 0.65 * var(--l));
+               transform-box: fill-box; transform-origin: 50% 100%;
+               transform: scaleY(calc(0.62 + 0.38 * var(--l)));
+               transition: opacity 1.2s ease, transform 1.2s ease; }
+.lamp__glass { filter: saturate(calc(0.72 + 0.4 * var(--l)))
+                       brightness(calc(0.78 + 0.34 * var(--l)));
+               transition: filter 1.2s ease; }
+.lamp__inner { opacity: calc(0.12 + 0.46 * var(--l)); transition: opacity 1.2s ease; }
+
+/* Candle flicker.
+   There is a real candle in a sanctuary lamp, so the flame behaves like one: mostly
+   steady, with small continuous movement and an occasional gutter. Three animations at
+   co-prime periods (5.7s / 8.3s / 23.1s) mean the combined cycle is ~18 minutes long and
+   the loop is never perceptible. The 23.1s track is what makes it feel alive — it holds
+   still for most of its length and then dips sharply, the way a draught catches a wick. */
+.lamp__core {
+  animation: flicker 5.7s ease-in-out infinite;
+  transform-box: fill-box; transform-origin: 50% 100%;
+  will-change: transform, opacity;
+}
+.lamp__gutter {
+  animation: gutter 23.1s ease-in-out infinite;
+  transform-box: fill-box; transform-origin: 50% 100%;
+}
+.lamp__halo  { animation: breathe 8.3s ease-in-out infinite; }
+.lamp__inner { animation: breathe 11.9s ease-in-out infinite reverse; }
+
+/* Small continuous movement: the flame leans and narrows as it burns. */
+@keyframes flicker {
+  0%   { transform: scale(1.00, 1.00) translateX(0)      skewX(0deg);   opacity: 0.97; }
+  13%  { transform: scale(0.97, 1.06) translateX(0.4px)  skewX(-1.1deg); opacity: 1;    }
+  29%  { transform: scale(1.02, 0.97) translateX(-0.3px) skewX(0.8deg);  opacity: 0.93; }
+  41%  { transform: scale(0.99, 1.03) translateX(0.5px)  skewX(-0.6deg); opacity: 0.99; }
+  58%  { transform: scale(1.03, 0.95) translateX(-0.5px) skewX(1.3deg);  opacity: 0.91; }
+  73%  { transform: scale(0.98, 1.04) translateX(0.2px)  skewX(-0.9deg); opacity: 1;    }
+  88%  { transform: scale(1.01, 0.99) translateX(-0.2px) skewX(0.4deg);  opacity: 0.95; }
+  100% { transform: scale(1.00, 1.00) translateX(0)      skewX(0deg);   opacity: 0.97; }
+}
+
+/* The gutter: long stretches of nothing, then a quick dip and recovery. */
+@keyframes gutter {
+  0%, 46%   { transform: scaleY(1);    opacity: 1;    }
+  51%       { transform: scaleY(0.82); opacity: 0.72; }
+  54%       { transform: scaleY(1.07); opacity: 1;    }
+  57%       { transform: scaleY(0.93); opacity: 0.88; }
+  61%, 100% { transform: scaleY(1);    opacity: 1;    }
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%      { opacity: 0.82; transform: scale(1.07); }
+}
+
+/* The lamp is out only during the Triduum. The wick stays; the fire does not. */
+.lamp--out .lamp__flame, .lamp--out .lamp__glow, .lamp--out .lamp__inner { opacity: 0; }
+.lamp--out .lamp__glass { filter: saturate(0.25) brightness(0.5); }
+
+/* Reduced motion: no flicker, but the lamp must still read as LIT — so amplitude goes
+   to zero rather than the effect being hidden. */
+@media (prefers-reduced-motion: reduce) {
+  .lamp__core, .lamp__gutter, .lamp__halo, .lamp__inner { animation: none; }
+  .lamp__halo { opacity: 0.7; }
+}
+
+/* ── Page furniture ───────────────────────────────────────────────────────── */
+
+.page {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: 2.25rem var(--gutter) 5rem;
+  padding-left: calc(var(--gutter) + 12px);
+  position: relative;
+}
+
+/* The ribbon: a missal's silk marker, in the day's liturgical colour. The primary
+   carrier of liturgical colour — see docs/COLOR.md. */
+.ribbon {
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--today-colour);
+  box-shadow: 1px 0 6px color-mix(in srgb, var(--today-colour) 55%, transparent);
+  z-index: 2;
+}
+
+/* The frontal: the altar cloth the lamp hangs before. Atmospheric carrier, kept low
+   so the red flame always dominates. */
+.hero {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 1rem 0 0.5rem;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 42%;
+  background: linear-gradient(to top,
+    color-mix(in srgb, var(--today-colour) 16%, transparent), transparent);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.hero__lamp {
+  background: none; border: 0; padding: 0; cursor: pointer;
+  display: block;
+}
+
+.daybar {
+  display: flex; align-items: center; justify-content: center;
+  gap: 0.55rem; margin-top: 0.25rem; text-align: center;
+  flex-wrap: wrap;
+}
+/* The chip: the day's colour as an ordo prints it. */
+.chip {
+  width: 0.62rem; height: 0.62rem; border-radius: 50%;
+  background: var(--today-colour);
+  border: 1px solid color-mix(in srgb, var(--brass) 45%, transparent);
+  flex: none;
+}
+.daybar__name { font-variant-caps: small-caps; letter-spacing: 0.12em; font-size: 0.95rem; }
+.daybar__season { color: var(--text-dim); font-size: 0.82rem; font-style: italic; }
+
+h1.title {
+  font-size: 1.05rem; font-weight: 400; text-align: center;
+  font-variant-caps: small-caps; letter-spacing: 0.2em;
+  color: var(--text-dim); margin: 0 0 1.75rem;
+}
+
+section { margin: 2.25rem 0; }
+section > h2 {
+  font-size: 0.78rem; font-weight: 400;
+  font-variant-caps: small-caps; letter-spacing: 0.22em;
+  color: var(--brass); margin: 0 0 0.85rem;
+  border-bottom: 1px solid var(--hairline); padding-bottom: 0.4rem;
+}
+
+/* ── Items ────────────────────────────────────────────────────────────────── */
+
+.item {
+  display: grid; grid-template-columns: 1.9rem 1fr; gap: 0.35rem 0.55rem;
+  align-items: start; padding: 0.6rem 0; border-bottom: 1px solid var(--hairline);
+}
+.item:last-child { border-bottom: 0; }
+.item__label { display: contents; }
+.item__title { font-size: 1.02rem; }
+.item--kept .item__title { color: var(--text-dim); }
+.item__meta { grid-column: 2; }
+.item__alts { grid-column: 2; display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.3rem; }
+
+/* The wick. Unlit is a bare wick; kept is a lit one. There are no checkmarks and
+   nothing turns green. */
+.wick {
+  background: none; border: 0; padding: 0.25rem; cursor: pointer;
+  width: 1.9rem; height: 1.9rem; display: grid; place-items: center;
+}
+.wick svg { width: 100%; height: 100%; overflow: visible; }
+.wick__ring {
+  fill: none; stroke: var(--brass-dim); stroke-width: 1.2; opacity: 0.55;
+  transition: opacity 0.35s ease, stroke 0.35s ease;
+}
+.wick__stem { stroke: var(--brass-dim); stroke-width: 2.2; stroke-linecap: round; }
+.wick:hover .wick__ring { opacity: 1; stroke: var(--brass); }
+.wick--kept .wick__ring { opacity: 0; }
+.wick__fire { opacity: 0; transition: opacity 0.45s ease; transform-box: fill-box;
+              transform-origin: 50% 100%; transform: scale(0.6); }
+.wick--kept .wick__fire { opacity: 1; transform: scale(1); }
+.wick--kept .wick__stem { stroke: var(--brass); }
+.wick--excused .wick__stem { stroke: var(--brass); stroke-dasharray: 3 3; }
+
+.pill {
+  font-size: 0.74rem; font-variant-caps: small-caps; letter-spacing: 0.08em;
+  color: var(--text-dim); background: var(--surface);
+  border: 1px solid var(--hairline); border-radius: 999px;
+  padding: 0.12rem 0.55rem; cursor: pointer;
+}
+.pill:hover { color: var(--text); border-color: var(--brass-dim); }
+.pill--on { color: var(--parchment); border-color: var(--brass); }
+
+.note { color: var(--text-dim); font-size: 0.86rem; font-style: italic; }
+
+/* ── Recollection ─────────────────────────────────────────────────────────── */
+
+.recollection {
+  position: fixed; inset: 0; z-index: 50;
+  background: #0B0908;
+  display: grid; grid-template-rows: 1fr auto;
+  place-items: center;
+  padding: env(safe-area-inset-top) 1.25rem env(safe-area-inset-bottom);
+  cursor: pointer;
+}
+.recollection__inner { display: grid; place-items: center; gap: 1.5rem; max-width: 30rem; }
+.recollection__title {
+  font-variant-caps: small-caps; letter-spacing: 0.2em; font-size: 1rem;
+  color: #C9BFB4; text-align: center; margin: 0;
+}
+/* No countdown. A countdown is an invitation to watch a clock. */
+.recollection__controls {
+  display: flex; gap: 1.5rem; justify-content: center; align-items: center;
+  padding: 1.25rem 0; opacity: 0; transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+.recollection__controls--shown { opacity: 1; pointer-events: auto; }
+.recollection__btn {
+  background: none; border: 0; color: #C9BFB4; cursor: pointer;
+  font-family: var(--serif); font-size: 0.88rem;
+  font-variant-caps: small-caps; letter-spacing: 0.16em;
+  border-bottom: 1px solid #3A322B; padding: 0.3rem 0.2rem;
+}
+.recollection__btn:hover { color: var(--parchment); border-color: var(--brass); }
+
+/* ── Good Friday and Holy Saturday ────────────────────────────────────────── */
+
+body[data-triduum='true'] { background: #000; }
+body[data-triduum='true'] .hero::after { display: none; }
+body[data-triduum='true'] .ribbon { background: #2A2422; box-shadow: none; }
+
+.footer { margin-top: 3rem; color: var(--text-dim); font-size: 0.8rem; text-align: center; }
+
+/* The ordo line: what today is, so the ribbons go in the right places. */
+.daybar__colour {
+  font-variant-caps: small-caps; letter-spacing: 0.1em; font-size: 0.78rem;
+  color: var(--today-colour);
+  filter: brightness(1.45);
+}
+.recollection__ordo {
+  color: #8E837A; font-variant-caps: small-caps; letter-spacing: 0.16em;
+  font-size: 0.82rem; text-align: center; margin: 0;
+}
+.recollection__text { color: #C9BFB4; max-width: 28rem; }
+
+.daybar--book { margin-top: 0.3rem; }
+
+/* ── Settings ─────────────────────────────────────────────────────────────── */
+
+.settings__head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 0.5rem; border-bottom: 1px solid var(--hairline);
+}
+.signin { display: grid; gap: 0.6rem; justify-items: start; max-width: 22rem; }
+.signin input {
+  font-family: var(--serif); font-size: 1rem;
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--hairline); border-radius: 3px;
+  padding: 0.5rem 0.65rem; width: 100%;
+}
+.signin input:focus { border-color: var(--brass); }
+
+.topbar {
+  position: fixed; top: 0; right: 0; z-index: 5;
+  padding: 0.6rem 0.9rem;
+}
+.topbar button {
+  background: none; border: 0; cursor: pointer; color: var(--text-dim);
+  font-family: var(--serif); font-size: 0.78rem;
+  font-variant-caps: small-caps; letter-spacing: 0.16em;
+}
+.topbar button:hover { color: var(--text); }
