@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { sunTimes } from './solar'
+import { resolveAnchor, sunTimes } from './solar'
 import { parseISO } from './kalendar'
 
 // Denver, Colorado.
@@ -48,5 +48,18 @@ describe('solar times', () => {
     const a = sunTimes(parseISO('2026-09-01'), DENVER.lat, DENVER.lon).sunrise!
     const b = sunTimes(parseISO('2026-10-01'), DENVER.lat, DENVER.lon).sunrise!
     expect(b.getTime() % 86_400_000).toBeGreaterThan(a.getTime() % 86_400_000)
+  })
+})
+
+describe('clock anchors land on the right calendar day', () => {
+  it('uses the liturgical day\'s fields, not its timestamp', () => {
+    // parseISO gives a UTC midnight. West of Greenwich that instant is already the
+    // previous local date, so a naive setHours() puts the reminder a day early.
+    const ashWednesday = parseISO('2026-02-18')
+    const fire = resolveAnchor({ clock: '07:00' }, ashWednesday)!
+    expect(fire.getFullYear()).toBe(2026)
+    expect(fire.getMonth()).toBe(1)
+    expect(fire.getDate()).toBe(18)
+    expect(fire.getHours()).toBe(7)
   })
 })

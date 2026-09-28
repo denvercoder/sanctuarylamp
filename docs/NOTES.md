@@ -170,3 +170,32 @@ Decisions and requirements as they land. Newest at the bottom.
   `--lumen`. Phones and tablets keep the compact lamp. See LAMP.md "The great lamp" —
   including the three bugs (degenerate gradients on zero-width strokes, opaque glass
   hiding the fire, and `position: relative` overriding the overlay's `fixed`).
+
+## 2026-09-27 — Stage 2: reminders, sync, location
+- **`src/lib/reminders.ts`** — computes when each obligation falls due, on the CLIENT.
+  - **Nothing rings for an item with no time.** The Rule gives no hour for the Rosary, so
+    the app does not invent one; it stays silent until the user sets a time. An app that
+    guesses when you ought to pray is worse than one that says nothing.
+  - `Profile.itemTimes` overrides an item's own anchor; solar anchors need coordinates
+    and go silent without them rather than falling back to a guessed clock time.
+  - Already-kept and excused items are skipped.
+  - **The Great Silence** — a nightly quiet window that correctly wraps past midnight
+    (21:30–06:00 is one interval, not two).
+- **Timezone bug found by a test**: `resolveAnchor` built a clock time with
+  `new Date(utcMidnight)` then `setHours()`. West of Greenwich that instant is already the
+  *previous* local date, so 07:00 on Ash Wednesday fired at 07:00 on Shrove Tuesday in
+  Denver. Now built from the liturgical day's calendar fields. Regression test added.
+- **`src/lib/sync.ts`** — all best-effort and additive; nothing in the UI waits on it.
+  - `drainPendingMarks()` runs before first render, so marks made from a notification
+    while the app was closed are in the record before it is displayed.
+  - Completions sync both ways, last-write-wins on the mark's own `at`.
+  - `publishReminders()` deletes the unsent future and rewrites it, so it is idempotent:
+    the client can republish after any change without stale rows or double-ringing.
+- **`src/lib/geo.ts`** — coordinates rounded to 3dp (~100m), which is far more than a
+  sunrise needs and less to store.
+- **Settings** gained: per-item bell times, the Great Silence window, and location.
+- 143 tests.
+
+### Stage 3 remains
+`supabase login` / `link`, then `db push`, secrets, `functions deploy`, the cron Vault
+secret — and the end-to-end push test, which is still the one unproven piece.

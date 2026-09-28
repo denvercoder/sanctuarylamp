@@ -4,6 +4,10 @@ import { lumen as computeLumen, planDay } from './lib/rule/evaluate'
 import type { Completion, CompletionState, Profile } from './lib/rule/types'
 import { DEFAULT_PROFILE, loadHistory, loadProfile, mark, saveProfile } from './db'
 import { rule } from './rule'
+import { upcomingReminders } from './lib/reminders'
+import {
+  drainPendingMarks, publishReminders, pullProfile, pushProfile, syncCompletions,
+} from './lib/sync'
 import { Today } from './components/Today'
 import { Recollection } from './components/Recollection'
 import { Settings } from './components/Settings'
@@ -24,10 +28,37 @@ export default function App() {
 
   useEffect(() => {
     void (async () => {
+      // Marks made from a notification while the app was closed land first, so the day's
+      // record is complete before it is shown.
+      await drainPendingMarks()
       const [p, h] = await Promise.all([loadProfile(), loadHistory()])
       setProfile(p); setHistory(h); setReady(true)
     })()
   }, [])
+
+  /** On sign-in: pull the profile, reconcile completions, then republish the queue. */
+  useEffect(() => {
+    if (!session) return
+    void (async () => {
+      const remote = await pullProfile()
+      if (remote) { setProfile(remote); await saveProfile(remote) }
+      await syncCompletions()
+      setHistory(await loadHistory())
+    })()
+  }, [session])
+
+  /**
+   * Republish the reminder queue whenever anything that affects it changes. Idempotent
+   * by construction — the future unsent rows are deleted and rewritten — so running it
+   * more often than strictly necessary costs nothing and getting it wrong is loud.
+   */
+  useEffect(() => {
+    if (!ready || !session) return
+    const t = window.setTimeout(() => {
+      void publishReminders(upcomingReminders(rule, profile, history))
+    }, 800)
+    return () => window.clearTimeout(t)
+  }, [ready, session, profile, history])
 
   /**
    * The liturgical day. It turns over at the profile's `dayStartsAtMin` rather than at
@@ -58,11 +89,13 @@ export default function App() {
   const onMark = useCallback(async (itemId: string, state: CompletionState | null) => {
     await mark(itemId, info.iso, state)
     setHistory(await loadHistory())
+    void syncCompletions()
   }, [info.iso])
 
   const onProfileChange = useCallback(async (next: Profile) => {
     setProfile(next)
     await saveProfile(next)
+    void pushProfile(next)
   }, [])
 
   /**

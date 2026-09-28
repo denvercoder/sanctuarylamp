@@ -95,6 +95,14 @@ export type Profile = {
    */
   books?: Partial<Record<string, string>>
   /**
+   * Per-item reminder times, "HH:MM" local, overriding the item's own anchor.
+   * An item with neither an anchor nor an override is never notified about — the app
+   * does not invent a time for an obligation whose time the user has not chosen.
+   */
+  itemTimes?: Record<string, string>
+  /** Nightly quiet window, minutes from local midnight. Nothing rings inside it. */
+  silence?: { fromMin: number; toMin: number }
+  /**
    * The user's own additions, beyond the Rule — a custom prayer routine.
    * Kept on the profile rather than in the Rule file, because the Rule is not theirs
    * to edit and their routine is not the Society's to define.

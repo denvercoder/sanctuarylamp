@@ -104,9 +104,13 @@ export function resolveAnchor(
 
   if (anchor.clock) {
     const [h, m] = anchor.clock.split(':').map(Number)
-    const d = new Date(day)
-    d.setHours(h ?? 0, m ?? 0, 0, 0)
-    return d
+    // Build the local instant from the liturgical day's CALENDAR FIELDS, not from its
+    // timestamp. `day` is a UTC midnight; west of Greenwich `new Date(day)` already sits
+    // on the previous local date, so setHours() would land the reminder a day early —
+    // 07:00 on Ash Wednesday would fire at 07:00 on Shrove Tuesday in Denver.
+    return new Date(
+      day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), h ?? 0, m ?? 0, 0, 0,
+    )
   }
 
   if (anchor.sun && coords) {
