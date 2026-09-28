@@ -11,6 +11,7 @@ import {
 import { Today } from './components/Today'
 import { Recollection } from './components/Recollection'
 import { Settings } from './components/Settings'
+import { Fidelity } from './components/Fidelity'
 import { useSession } from './components/Auth'
 
 const COLOUR_VAR: Record<string, string> = {
@@ -24,6 +25,7 @@ export default function App() {
   const [ready, setReady] = useState(false)
   const [recollecting, setRecollecting] = useState<string | null | false>(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [fidelityOpen, setFidelityOpen] = useState(false)
   const { session } = useSession()
 
   useEffect(() => {
@@ -122,6 +124,15 @@ export default function App() {
 
   if (!ready) return null
 
+  if (fidelityOpen) {
+    return (
+      <Fidelity
+        rule={rule} profile={profile} history={history}
+        onClose={() => setFidelityOpen(false)}
+      />
+    )
+  }
+
   if (settingsOpen) {
     return (
       <Settings
@@ -135,6 +146,7 @@ export default function App() {
   return (
     <>
       <div className="topbar">
+        <button type="button" onClick={() => setFidelityOpen(true)}>Fidelity</button>
         <button type="button" onClick={() => setSettingsOpen(true)}>Settings</button>
       </div>
       <Today

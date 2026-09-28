@@ -257,6 +257,7 @@ body[data-triduum='true'] .ribbon { background: #2A2422; box-shadow: none; }
 .topbar {
   position: fixed; top: 0; right: 0; z-index: 5;
   padding: 0.6rem 0.9rem;
+  display: flex; gap: 1rem;
 }
 .topbar button {
   background: none; border: 0; cursor: pointer; color: var(--text-dim);
@@ -422,3 +423,29 @@ body[data-triduum='true'] .ribbon { background: #2A2422; box-shadow: none; }
   padding: 0.22rem 0.45rem;
 }
 .time:focus { border-color: var(--brass); }
+
+/* ── Fidelity ─────────────────────────────────────────────────────────────── */
+
+.fidelity__scroll { overflow-x: auto; padding: 0.5rem 0 0.25rem; margin: 0 -0.25rem; }
+.fidelity__grid { display: block; height: auto; }
+.fidelity__grid rect { cursor: pointer; transition: fill-opacity 0.2s ease; }
+.fidelity__grid rect:hover { fill-opacity: 1; }
+.fidelity__month {
+  fill: var(--text-dim); font-size: 8px;
+  font-family: var(--serif); font-variant-caps: small-caps; letter-spacing: 0.1em;
+}
+.fidelity__caption { min-height: 2.6em; margin-top: 0.4rem; }
+
+.fidelity__stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr));
+  gap: 1rem; margin: 0 0 1rem;
+}
+.fidelity__stats > div { text-align: center; }
+.fidelity__stats dt {
+  font-variant-caps: small-caps; letter-spacing: 0.14em;
+  font-size: 0.72rem; color: var(--brass);
+}
+.fidelity__stats dd { margin: 0.2rem 0 0; font-size: 1.5rem; }
+/* Returns is the number that matters, so it is the one that is lit. */
+.fidelity__returns dd { color: var(--ember); }
+.fidelity__returns dt { color: var(--ember); }
