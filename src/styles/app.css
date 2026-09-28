@@ -449,3 +449,28 @@ body[data-triduum='true'] .ribbon { background: #2A2422; box-shadow: none; }
 /* Returns is the number that matters, so it is the one that is lit. */
 .fidelity__returns dd { color: var(--ember); }
 .fidelity__returns dt { color: var(--ember); }
+
+/* ── Particular examen ────────────────────────────────────────────────────── */
+
+.examen__resolution { font-size: 1.4rem; margin: 1.5rem 0 0.2rem; }
+.examen__h2 {
+  font-size: 0.78rem; font-weight: 400; font-variant-caps: small-caps;
+  letter-spacing: 0.22em; color: var(--brass); margin: 0 0 0.6rem;
+}
+.examen__counts { display: flex; gap: 2.5rem; margin: 1.5rem 0; flex-wrap: wrap; }
+.examen__counter-label {
+  font-variant-caps: small-caps; letter-spacing: 0.14em;
+  font-size: 0.72rem; color: var(--brass); margin-bottom: 0.4rem;
+}
+.examen__counter-row { display: flex; align-items: center; gap: 0.75rem; }
+.examen__counter-value { font-size: 1.6rem; min-width: 1.6rem; text-align: center; }
+
+.examen__grid { display: block; width: 100%; max-width: 15rem; margin: 0.5rem 0 1.5rem; }
+.examen__grid circle { fill: var(--ember); }
+.examen__spine { stroke: var(--hairline); stroke-width: 1; }
+.examen__none { stroke: var(--brass-dim); stroke-width: 1.2; }
+.examen__axis {
+  fill: var(--text-dim); font-size: 6px; font-family: var(--serif);
+  font-variant-caps: small-caps; letter-spacing: 0.1em;
+}
+.examen__row--today circle { fill: var(--parchment); }

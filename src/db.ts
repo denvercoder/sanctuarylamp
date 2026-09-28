@@ -1,5 +1,6 @@
 import Dexie, { type EntityTable } from 'dexie'
 import type { Completion, Profile } from './lib/rule/types'
+import type { ExamenEntry, Resolution } from './lib/examen'
 
 /**
  * Local-first storage. IndexedDB is the source of truth on the device.
@@ -13,11 +14,20 @@ type Setting = { key: string; value: unknown }
 const db = new Dexie('sanctuarylamp') as Dexie & {
   completions: EntityTable<Completion & { id?: number }, 'id'>
   settings: EntityTable<Setting, 'key'>
+  resolutions: EntityTable<Resolution, 'id'>
+  examen: EntityTable<ExamenEntry & { id?: number }, 'id'>
 }
 
 db.version(1).stores({
   completions: '++id, itemId, date, [itemId+date]',
   settings: 'key',
+})
+
+db.version(2).stores({
+  completions: '++id, itemId, date, [itemId+date]',
+  settings: 'key',
+  resolutions: 'id, startedAt',
+  examen: '++id, date, resolutionId, [resolutionId+date]',
 })
 
 export const DEFAULT_PROFILE: Profile = {
@@ -84,3 +94,36 @@ export async function mark(
 }
 
 export { db }
+
+
+// ── The particular examen ──────────────────────────────────────────────────────
+// Kept local only, and never synced. See docs/PLAN.md §10: the examen is the most
+// private thing this app holds, and the simplest way to keep a promise about it is to
+// give the server nothing to hold.
+
+export async function loadResolutions(): Promise<Resolution[]> {
+  return db.resolutions.toArray()
+}
+
+export async function saveResolutions(rs: Resolution[]): Promise<void> {
+  await db.transaction('rw', db.resolutions, async () => {
+    await db.resolutions.clear()
+    await db.resolutions.bulkAdd(rs)
+  })
+}
+
+export async function loadExamen(): Promise<ExamenEntry[]> {
+  return db.examen.toArray()
+}
+
+export async function recordExamen(
+  resolutionId: string, date: string,
+  patch: Partial<Pick<ExamenEntry, 'midday' | 'night' | 'note'>>,
+): Promise<void> {
+  const existing = await db.examen.where({ resolutionId, date }).first()
+  if (existing?.id !== undefined) {
+    await db.examen.update(existing.id, patch)
+  } else {
+    await db.examen.add({ resolutionId, date, ...patch })
+  }
+}

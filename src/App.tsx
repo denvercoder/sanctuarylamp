@@ -2,7 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { dayInfo, todayLocal } from './lib/kalendar'
 import { lumen as computeLumen, planDay } from './lib/rule/evaluate'
 import type { Completion, CompletionState, Profile } from './lib/rule/types'
-import { DEFAULT_PROFILE, loadHistory, loadProfile, mark, saveProfile } from './db'
+import {
+  DEFAULT_PROFILE, loadExamen, loadHistory, loadProfile, loadResolutions, mark,
+  recordExamen, saveProfile, saveResolutions,
+} from './db'
 import { rule } from './rule'
 import { upcomingReminders } from './lib/reminders'
 import {
@@ -12,6 +15,8 @@ import { Today } from './components/Today'
 import { Recollection } from './components/Recollection'
 import { Settings } from './components/Settings'
 import { Fidelity } from './components/Fidelity'
+import { Examen } from './components/Examen'
+import type { ExamenEntry, Resolution } from './lib/examen'
 import { useSession } from './components/Auth'
 
 const COLOUR_VAR: Record<string, string> = {
@@ -26,6 +31,9 @@ export default function App() {
   const [recollecting, setRecollecting] = useState<string | null | false>(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [fidelityOpen, setFidelityOpen] = useState(false)
+  const [examenOpen, setExamenOpen] = useState(false)
+  const [resolutions, setResolutions] = useState<Resolution[]>([])
+  const [examenEntries, setExamenEntries] = useState<ExamenEntry[]>([])
   const { session } = useSession()
 
   useEffect(() => {
@@ -33,8 +41,11 @@ export default function App() {
       // Marks made from a notification while the app was closed land first, so the day's
       // record is complete before it is shown.
       await drainPendingMarks()
-      const [p, h] = await Promise.all([loadProfile(), loadHistory()])
-      setProfile(p); setHistory(h); setReady(true)
+      const [p, h, rs, ex] = await Promise.all([
+        loadProfile(), loadHistory(), loadResolutions(), loadExamen(),
+      ])
+      setProfile(p); setHistory(h); setResolutions(rs); setExamenEntries(ex)
+      setReady(true)
     })()
   }, [])
 
@@ -124,6 +135,20 @@ export default function App() {
 
   if (!ready) return null
 
+  if (examenOpen) {
+    return (
+      <Examen
+        profile={profile} resolutions={resolutions} entries={examenEntries}
+        todayIso={info.iso}
+        onStart={(rs) => { setResolutions(rs); void saveResolutions(rs) }}
+        onRecord={(resolutionId, date, patch) => {
+          void recordExamen(resolutionId, date, patch).then(loadExamen).then(setExamenEntries)
+        }}
+        onClose={() => setExamenOpen(false)}
+      />
+    )
+  }
+
   if (fidelityOpen) {
     return (
       <Fidelity
@@ -146,6 +171,7 @@ export default function App() {
   return (
     <>
       <div className="topbar">
+        <button type="button" onClick={() => setExamenOpen(true)}>Examen</button>
         <button type="button" onClick={() => setFidelityOpen(true)}>Fidelity</button>
         <button type="button" onClick={() => setSettingsOpen(true)}>Settings</button>
       </div>
