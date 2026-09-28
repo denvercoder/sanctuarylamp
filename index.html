@@ -14,9 +14,10 @@
     <meta name="apple-mobile-web-app-title" content="Sanctuary" />
     <meta name="color-scheme" content="dark light" />
     <title>Sanctuary Lamp</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cardo:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+    <!-- Cardo is self-hosted; see src/styles/fonts.css. No third-party request is
+         made on load, and the face is available with no network at all. -->
+    <link rel="preload" href="/fonts/cardo-400-normal-latin.woff2" as="font"
+          type="font/woff2" crossorigin />
   </head>
   <body>
     <div id="root"></div>

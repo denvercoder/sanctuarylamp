@@ -88,7 +88,9 @@ export default defineConfig({
       injectRegister: null,
       manifest: false, // public/manifest.webmanifest is authored by hand
       injectManifest: {
-        globPatterns: ['**/*.{js,css,html,woff2,png,ico,svg}'],
+        // webmanifest included deliberately: without it a cold offline launch cannot
+        // read the manifest, and the install/update path degrades.
+        globPatterns: ['**/*.{js,css,html,woff2,png,ico,svg,webmanifest}'],
       },
       devOptions: { enabled: true, type: 'module', navigateFallback: 'index.html' },
     }),

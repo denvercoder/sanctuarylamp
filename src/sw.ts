@@ -1,5 +1,8 @@
 /// <reference lib="webworker" />
-import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching'
+import {
+  cleanupOutdatedCaches, createHandlerBoundToURL, precacheAndRoute,
+} from 'workbox-precaching'
+import { NavigationRoute, registerRoute } from 'workbox-routing'
 
 declare const self: ServiceWorkerGlobalScope
 
@@ -13,6 +16,16 @@ declare const self: ServiceWorkerGlobalScope
 
 precacheAndRoute(self.__WB_MANIFEST)
 cleanupOutdatedCaches()
+
+/**
+ * Serve the app shell for every navigation.
+ *
+ * Without this, precaching index.html is not enough: offline, a deep link or a reload on
+ * any path other than "/" goes to the network and fails. A single-page app needs the
+ * shell returned for any navigation, and "works in a chapel basement with no signal" has
+ * to mean from whatever screen the user last had open.
+ */
+registerRoute(new NavigationRoute(createHandlerBoundToURL('index.html')))
 
 self.addEventListener('install', () => { void self.skipWaiting() })
 self.addEventListener('activate', (e) => { e.waitUntil(self.clients.claim()) })
