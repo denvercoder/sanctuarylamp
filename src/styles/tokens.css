@@ -35,6 +35,19 @@
   --rubric: var(--ember);
   --hairline: color-mix(in srgb, var(--brass) 28%, transparent);
 
+  /* Safe areas.
+     index.html sets viewport-fit=cover and a translucent status bar, which deliberately
+     puts the page UNDER the notch, the camera and the home indicator. Everything that
+     touches an edge must add these. Named as variables rather than calling env() inline
+     so they can be overridden to simulate a notched device in a browser. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+
+  /* Apple's minimum comfortable target. Anything tappable meets it. */
+  --tap: 44px;
+
   --serif: 'Cardo', 'EB Garamond', Georgia, 'Times New Roman', serif;
   --measure: 34rem;
   --gutter: 1rem;

@@ -74,8 +74,11 @@
 .page {
   max-width: var(--measure);
   margin: 0 auto;
-  padding: 2.25rem var(--gutter) 5rem;
-  padding-left: calc(var(--gutter) + 12px);
+  /* Top clears both the notch and the fixed bar above it. */
+  padding: calc(var(--safe-top) + var(--tap) + 0.5rem)
+           calc(var(--gutter) + var(--safe-right))
+           calc(5rem + var(--safe-bottom))
+           calc(var(--gutter) + 12px + var(--safe-left));
   position: relative;
 }
 
@@ -83,7 +86,7 @@
    carrier of liturgical colour — see docs/COLOR.md. */
 .ribbon {
   position: fixed;
-  left: 0; top: 0; bottom: 0;
+  left: var(--safe-left); top: 0; bottom: 0;
   width: 3px;
   background: var(--today-colour);
   box-shadow: 1px 0 6px color-mix(in srgb, var(--today-colour) 55%, transparent);
@@ -160,9 +163,12 @@ section > h2 {
    nothing turns green. */
 .wick {
   background: none; border: 0; padding: 0.25rem; cursor: pointer;
-  width: 1.9rem; height: 1.9rem; display: grid; place-items: center;
+  width: var(--tap); height: var(--tap); display: grid; place-items: center;
+  /* Pull the larger target back so the drawn wick stays in its column. */
+  margin: -0.45rem 0 -0.45rem -0.55rem;
 }
-.wick svg { width: 100%; height: 100%; overflow: visible; }
+.wick svg { width: 1.9rem; height: 1.9rem; }
+.wick svg { overflow: visible; }
 .wick__ring {
   fill: none; stroke: var(--brass-dim); stroke-width: 1.2; opacity: 0.55;
   transition: opacity 0.35s ease, stroke 0.35s ease;
@@ -177,10 +183,12 @@ section > h2 {
 .wick--excused .wick__stem { stroke: var(--brass); stroke-dasharray: 3 3; }
 
 .pill {
-  font-size: 0.74rem; font-variant-caps: small-caps; letter-spacing: 0.08em;
+  font-size: 0.78rem; font-variant-caps: small-caps; letter-spacing: 0.08em;
   color: var(--text-dim); background: var(--surface);
   border: 1px solid var(--hairline); border-radius: 999px;
-  padding: 0.12rem 0.55rem; cursor: pointer;
+  padding: 0.4rem 0.8rem; cursor: pointer;
+  min-height: 2.1rem;
+  font-family: var(--serif);
 }
 .pill:hover { color: var(--text); border-color: var(--brass-dim); }
 .pill--on { color: var(--parchment); border-color: var(--brass); }
@@ -194,7 +202,10 @@ section > h2 {
   background: #0B0908;
   display: grid; grid-template-rows: 1fr auto;
   place-items: center;
-  padding: env(safe-area-inset-top) 1.25rem env(safe-area-inset-bottom);
+  padding: calc(var(--safe-top) + 0.5rem)
+           calc(1.25rem + var(--safe-right))
+           calc(var(--safe-bottom) + 0.5rem)
+           calc(1.25rem + var(--safe-left));
   cursor: pointer;
 }
 .recollection__inner { display: grid; place-items: center; gap: 1.5rem; max-width: 30rem; }
@@ -211,9 +222,10 @@ section > h2 {
 .recollection__controls--shown { opacity: 1; pointer-events: auto; }
 .recollection__btn {
   background: none; border: 0; color: #C9BFB4; cursor: pointer;
-  font-family: var(--serif); font-size: 0.88rem;
+  font-family: var(--serif); font-size: 0.9rem;
   font-variant-caps: small-caps; letter-spacing: 0.16em;
-  border-bottom: 1px solid #3A322B; padding: 0.3rem 0.2rem;
+  border-bottom: 1px solid #3A322B;
+  min-height: var(--tap); padding: 0 0.8rem;
 }
 .recollection__btn:hover { color: var(--parchment); border-color: var(--brass); }
 
@@ -255,16 +267,33 @@ body[data-triduum='true'] .ribbon { background: #2A2422; box-shadow: none; }
 .signin input:focus { border-color: var(--brass); }
 
 .topbar {
-  position: fixed; top: 0; right: 0; z-index: 5;
-  padding: 0.6rem 0.9rem;
-  display: flex; gap: 1rem;
+  position: fixed;
+  top: 0; right: 0; left: 0;
+  z-index: 5;
+  /* Sits BELOW the status bar and the camera, not under them. */
+  padding: calc(var(--safe-top) + 0.35rem)
+           calc(0.9rem + var(--safe-right))
+           0.35rem
+           calc(0.9rem + var(--safe-left));
+  display: flex; gap: 0.35rem; justify-content: flex-end;
+  /* A short wash so small-caps stay legible over the lamp's glow as it scrolls past. */
+  background: linear-gradient(to bottom,
+    var(--bg) 0%, color-mix(in srgb, var(--bg) 82%, transparent) 62%, transparent 100%);
+  pointer-events: none;
 }
 .topbar button {
   background: none; border: 0; cursor: pointer; color: var(--text-dim);
-  font-family: var(--serif); font-size: 0.78rem;
+  font-family: var(--serif); font-size: 0.82rem;
   font-variant-caps: small-caps; letter-spacing: 0.16em;
+  /* Full-size tap targets: these were 18px tall and effectively unhittable on a phone. */
+  min-height: var(--tap); min-width: var(--tap);
+  padding: 0 0.6rem;
+  pointer-events: auto;
+  /* Verified to fit on a 320px viewport — the narrowest iPhone ever shipped — so the
+     labels must never wrap or clip rather than silently truncating. */
+  white-space: nowrap;
 }
-.topbar button:hover { color: var(--text); }
+.topbar button:hover, .topbar button:active { color: var(--text); }
 
 /* ── The great lamp: Recollection on a large screen ───────────────────────── */
 

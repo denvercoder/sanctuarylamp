@@ -275,3 +275,16 @@ record is the director's work.
 - Sanctoral cycle incomplete; `rank` only populated for Sundays and principal feasts.
 - `morning-prayer`/`evening-prayer` should let the user nominate which hours discharge
   them, now that we know it is any two of his choosing.
+- **BUG (reported from a real iPhone): the menu was under the notch and untappable.**
+  `index.html` sets `viewport-fit=cover` and `apple-mobile-web-app-status-bar-style:
+  black-translucent`, which deliberately extend the page UNDER the status bar, camera and
+  home indicator — and nothing then handled the insets. On a desktop browser the insets
+  are all 0, so this was invisible in every test I ran.
+  - Safe areas are now `--safe-top/right/bottom/left` variables in tokens.css rather than
+    inline `env()` calls, specifically so a notch can be SIMULATED in a desktop browser by
+    overriding them. Verified at 375x812 with a 59px inset and at 320x568 with 44px.
+  - Tap targets were the other half of it: the menu buttons were ~18px tall. Everything
+    tappable is now at least 44px (`--tap`), including the wick checkboxes, which get a
+    44px target with negative margins so the drawn wick stays in its column.
+  - The top bar spans the full width with a short gradient wash, so small-caps stay
+    legible over the lamp's glow as content scrolls under it.
